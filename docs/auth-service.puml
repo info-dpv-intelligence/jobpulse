@@ -1,0 +1,16 @@
+@startuml
+
+user "Applicant" as applicant
+user "Poster" as poster
+system "Auth Service" as authService
+
+
+applicant -> authService : Register
+poster -> authService : Register
+
+applicant -> authService : Login
+authService -> applicant : Auth Token
+poster -> authService : Login
+authService -> poster : Auth Token
+
+@enduml

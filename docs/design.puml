@@ -1,0 +1,22 @@
+@startuml
+
+enum UserRole {
+  ADMIN
+  JOB_POSTER
+  JOB_APPLICANT
+}
+
+class User {}
+
+class JobPost {}
+
+class JobApplication {}
+
+class JobApplicant extends User {}
+class JobPoster extends User {}
+
+JobPoster --* JobPost: can have many job posts
+Job -* JobApplication : can have many job applications
+JobApplication -- JobPost : applies to
+JobApplication -- JobApplicant : belongs to
+@enduml

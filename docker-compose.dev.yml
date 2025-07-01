@@ -1,0 +1,8 @@
+services:
+  auth-service:
+    volumes:
+      - ./auth-service/src:/app/src
+      - ./auth-service/build.gradle:/app/build.gradle
+      - ./auth-service/settings.gradle:/app/settings.gradle
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
