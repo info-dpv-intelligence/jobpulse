@@ -1,6 +1,18 @@
 version: '3.8'
 
 services:
+  auth-db:
+    image: postgres:16
+    container_name: auth-db
+    environment:
+      POSTGRES_DB: authdb
+      POSTGRES_USER: authuser
+      POSTGRES_PASSWORD: authpass
+    ports:
+      - "5435:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+
   auth-service:
     build: ./auth-service
     container_name: auth-service
@@ -8,4 +20,11 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-    # Add database configuration here if needed (e.g., POSTGRES_URL,
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/authdb
+      - SPRING_DATASOURCE_USERNAME=authuser
+      - SPRING_DATASOURCE_PASSWORD=authpass
+    depends_on:
+      - auth-db
+
+volumes:
+  auth-db-data:

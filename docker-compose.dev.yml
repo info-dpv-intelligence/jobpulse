@@ -1,8 +1,15 @@
 services:
   auth-service:
     volumes:
-      - ./auth-service/src:/app/src
-      - ./auth-service/build.gradle:/app/build.gradle
-      - ./auth-service/settings.gradle:/app/settings.gradle
+      - ./auth-service:/app
+      - gradle-cache:/home/gradle/.gradle
+    working_dir: /app
+    entrypoint: []
+    command: ./gradlew bootRun --continuous
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/authdb
+      - SPRING_DATASOURCE_USERNAME=authuser
+      - SPRING_DATASOURCE_PASSWORD=authpass
+volumes:
+  gradle-cache:
