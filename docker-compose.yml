@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   auth-db:
-    image: postgres:16
+    image: postgres:16.2
     container_name: auth-db
     environment:
       POSTGRES_DB: authdb
@@ -23,6 +23,17 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/authdb
       - SPRING_DATASOURCE_USERNAME=authuser
       - SPRING_DATASOURCE_PASSWORD=authpass
+    depends_on:
+      - auth-db
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
     depends_on:
       - auth-db
 

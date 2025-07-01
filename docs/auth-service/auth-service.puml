@@ -1,0 +1,16 @@
+@startuml
+
+user "Job Applicant/Job Poster" as "User" << (U,#FFAAAA) >>
+system "Auth Service" as authService
+
+rectangle "User Management" {
+    usecase "Register User" as UC1
+    usecase "Login User" as UC2
+
+    UC1 --> authService : "POST /register"
+    authService --> UC1 : "User Created"
+    UC2 --> authService : "POST /login"
+    authService --> UC2 : "Authentication Token"
+}
+
+@enduml

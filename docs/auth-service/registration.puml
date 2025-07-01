@@ -1,0 +1,15 @@
+@startuml
+
+enum UserRole {
+  ADMIN
+  JOB_POSTER
+  JOB_APPLICANT
+}
+
+class User {
+    +id: UUID
+    +email: String
+    +password: String
+    +role: UserRole
+}
+@enduml
