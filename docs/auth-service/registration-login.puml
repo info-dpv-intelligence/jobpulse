@@ -1,0 +1,38 @@
+@startuml
+
+enum UserRole {
+  ADMIN
+  JOB_POSTER
+  JOB_APPLICANT
+}
+
+class User {
+    +id: UUID
+    +email: String
+    +password: String
+    +role: UserRole
+}
+
+class JwtToken {
+    +token: String
+    +expiresAt: DateTime
+    +userId: UUID
+}
+
+class RefreshToken {
+    +token: String
+    +expiresAt: DateTime
+    +userId: UUID
+}
+
+class AuthResponse {
+    +accessToken: String
+    +refreshToken: String
+}
+
+class UserService {
+    +register(registerRequest: RegisterRequest): User
+    +login(loginRequest: LoginRequest): AuthResponse
+    +refreshToken(refreshToken: String): AuthResponse
+}
+@enduml

@@ -9,4 +9,9 @@ public class PingController {
     public String ping() {
         return "pong!";
     }
+
+    @GetMapping("/protected-ping")
+    public String protectedPing() {
+        return "protected pong!";
+    }
 }

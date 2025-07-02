@@ -6,8 +6,6 @@ enum UserRole {
   JOB_APPLICANT
 }
 
-class User {}
-
 class JobPost {}
 
 class JobApplication {}
