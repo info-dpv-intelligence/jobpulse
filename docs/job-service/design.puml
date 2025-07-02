@@ -1,17 +1,74 @@
 @startuml
 
-enum UserRole {
-  ADMIN
-  JOB_POSTER
-  JOB_APPLICANT
+class JobPost {
+  +id: UUID
+  +title: String
+  +job_poster_id: UUID
+  +created_at: DateTime
+  +updated_at: DateTime
+  +is_active: Boolean
 }
 
-class JobPost {}
+class JobApplication {
+  +id: UUID
+  +job_post_id: UUID
+  +job_applicant_id: UUID
+  +status: String
+  +applied_at: DateTime
+  +updated_at: DateTime
+}
 
-class JobApplication {}
+class ApplicationFiles {
+  +id: UUID
+  +job_application_id: UUID
+  +file_name: String
+  +file_type: String
+  +uploaded_at: DateTime
+}
 
-JobPoster --* JobPost: can have many job posts
-Job -* JobApplication : can have many job applications
-JobApplication -- JobPost : applies to
-JobApplication -- JobApplicant : belongs to
-@enduml
+JobPost "1" -- "0..*" JobApplication : has
+JobApplication "0..*" -- "1" ApplicationFiles : contains
+
+package "Shared" {
+  package "Model" {
+    enum UserRole {
+      ADMIN
+      JOB_POSTER
+      JOB_APPLICANT
+    }
+  }
+  package "JwtToken" {
+    package "Model" {
+      class TokenUser {
+        +userId: UUID
+        +role: UserRole
+      }
+    }
+    class JwtTokenService {
+      +extractTokenFromHeader(header: String): TokenUser
+    }
+  }
+}
+
+class CreateJobPostRequest {
+  +title: String
+}
+
+class ApplyToJobRequest {
+  +job_post_id: UUID
+}
+
+class UploadApplicationFilesRequest {
+  +job_application_id: UUID
+  +file_name: String
+  +file_type: String
+}
+
+class JobService {
+  JobService(JwtTokenService jwtTokenService)
+  +createJobPost(request: CreateJobPostRequest, tokenUser: TokenUser): JobPost
+  +getJobPosts(): List<JobPost>
+  +applyToJob(request: ApplyToJobRequest, tokenUser: TokenUser): JobApplication
+  +getApplicationsForJob(jobPostId: UUID): List<JobApplication>
+  +uploadApplicationFiles(request: UploadApplicationFilesRequest, tokenUser: TokenUser): ApplicationFiles
+}
