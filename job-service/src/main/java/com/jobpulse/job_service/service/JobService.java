@@ -2,8 +2,14 @@ package com.jobpulse.job_service.service;
 
 import com.jobpulse.job_service.model.JobPost;
 import com.jobpulse.job_service.repository.JobPostRepository;
+
+import com.jobpulse.job_service.dto.CreateJobPostCommand;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.jobpulse.job_service.dto.CreateJobPostRequest;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 import java.util.List;
 
@@ -21,5 +27,15 @@ public class JobService {
         return jobPostRepository.findAll();
     }
 
-    // Add more business logic methods as needed (e.g.,
+    public JobPost createJob(CreateJobPostCommand command) {
+        JobPost jobPost = new JobPost();
+        jobPost.setTitle(command.getTitle());
+        jobPost.setDescription(command.getDescription());
+        jobPost.setJobPosterId(UUID.fromString(command.getJobPosterId()));
+        jobPost.setCreatedAt(LocalDateTime.now());
+        jobPost.setUpdatedAt(LocalDateTime.now());
+        jobPost.setActive(true);
+
+        return jobPostRepository.save(jobPost);
+    }
 }
