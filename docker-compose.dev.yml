@@ -1,31 +1,39 @@
+version: '3.8'
+
 services:
   auth-service:
     volumes:
-      - ./auth-service:/app
-      - gradle-cache:/app/.gradle
-    working_dir: /app
+      - ./:/workspace
+      - gradle-cache:/workspace/.gradle
+    working_dir: /workspace
     entrypoint: []
-    command: ./gradlew bootRun --continuous
+    command: ./gradlew :auth-service:bootRun --continuous
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/authdb
       - SPRING_DATASOURCE_USERNAME=authuser
       - SPRING_DATASOURCE_PASSWORD=authpass
-      - GRADLE_USER_HOME=/app/.gradle
+      - GRADLE_USER_HOME=/workspace/.gradle
+    depends_on:
+      - auth-db
+      - kafka
 
   job-service:
     volumes:
-      - ./job-service:/app
-      - gradle-cache-job:/app/.gradle
-    working_dir: /app
+      - ./:/workspace
+      - gradle-cache-job:/workspace/.gradle
+    working_dir: /workspace
     entrypoint: []
-    command: ./gradlew bootRun --continuous
+    command: ./gradlew :job-service:bootRun --continuous
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://job-db:5432/jobdb
       - SPRING_DATASOURCE_USERNAME=jobuser
       - SPRING_DATASOURCE_PASSWORD=jobpass
-      - GRADLE_USER_HOME=/app/.gradle
+      - GRADLE_USER_HOME=/workspace/.gradle
+    depends_on:
+      - job-db
+      - kafka
 
 volumes:
   gradle-cache:

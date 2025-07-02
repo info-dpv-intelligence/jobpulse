@@ -6,6 +6,8 @@ import com.jobpulse.auth_service.dto.AuthResponse;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
 
+import com.jobpulse.common_events.model.UserEvent;
+
 import com.jobpulse.auth_service.model.RefreshToken;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,9 @@ public class UserService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private UserEventProducer userEventProducer;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public ResponseEntity<?> registerUser(RegisterRequest request) {
@@ -34,7 +39,13 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             user.setRole(request.getRole());
             userRepository.save(user);
-            // @todo: send event 
+            
+            UserEvent event = UserEvent.created(
+                user.getId().toString(), 
+                user.getEmail()
+            );
+            userEventProducer.sendUserEvent(event);
+
             return ResponseEntity.ok("User registered successfully");
         } catch (Exception e) {
             // @todo add logging

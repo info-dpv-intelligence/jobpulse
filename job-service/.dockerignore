@@ -1,8 +1,0 @@
-build/
-.gradle/
-out/
-*.iml
-*.log
-.idea/
-.vscode/
-.DS_Store
