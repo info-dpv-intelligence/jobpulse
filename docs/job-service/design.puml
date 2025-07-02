@@ -3,26 +3,39 @@
 class JobPost {
   +id: UUID
   +title: String
+  +description: String
   +job_poster_id: UUID
   +created_at: DateTime
   +updated_at: DateTime
   +is_active: Boolean
 }
 
+enum ApplicationStatus {
+  APPLIED
+  REVIEWED
+  REJECTED
+}
+
 class JobApplication {
   +id: UUID
   +job_post_id: UUID
   +job_applicant_id: UUID
-  +status: String
+  +status: ApplicationStatus
   +applied_at: DateTime
   +updated_at: DateTime
+}
+
+enum ApplicationFileType {
+  RESUME
+  COVER
+  OTHER
 }
 
 class ApplicationFiles {
   +id: UUID
   +job_application_id: UUID
   +file_name: String
-  +file_type: String
+  +file_type: ApplicationFileType
   +uploaded_at: DateTime
 }
 
