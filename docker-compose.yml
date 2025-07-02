@@ -13,6 +13,19 @@ services:
     volumes:
       - auth-db-data:/var/lib/postgresql/data
 
+  job-db:
+    image: postgres:16.2
+    container_name: job-db
+    environment:
+      POSTGRES_DB: jobdb
+      POSTGRES_USER: jobuser
+      POSTGRES_PASSWORD: jobpass
+    ports:
+      - "5436:5432"
+    volumes:
+      - job-db-data:/var/lib/postgresql/data
+
+
   auth-service:
     build: ./auth-service
     container_name: auth-service
@@ -26,6 +39,19 @@ services:
     depends_on:
       - auth-db
 
+  job-service:
+    build: ./job-service
+    container_name: job-service
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://job-db:5432/jobdb
+      - SPRING_DATASOURCE_USERNAME=jobuser
+      - SPRING_DATASOURCE_PASSWORD=jobpass
+    depends_on:
+      - job-db
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -36,6 +62,8 @@ services:
       - "5050:80"
     depends_on:
       - auth-db
+      - job-db
 
 volumes:
   auth-db-data:
+  job-db-data:

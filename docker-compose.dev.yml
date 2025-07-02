@@ -12,5 +12,21 @@ services:
       - SPRING_DATASOURCE_USERNAME=authuser
       - SPRING_DATASOURCE_PASSWORD=authpass
       - GRADLE_USER_HOME=/app/.gradle
+
+  job-service:
+    volumes:
+      - ./job-service:/app
+      - gradle-cache-job:/app/.gradle
+    working_dir: /app
+    entrypoint: []
+    command: ./gradlew bootRun --continuous
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://job-db:5432/jobdb
+      - SPRING_DATASOURCE_USERNAME=jobuser
+      - SPRING_DATASOURCE_PASSWORD=jobpass
+      - GRADLE_USER_HOME=/app/.gradle
+
 volumes:
   gradle-cache:
+  gradle-cache-job:
