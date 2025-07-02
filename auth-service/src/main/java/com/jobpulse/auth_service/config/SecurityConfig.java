@@ -28,7 +28,15 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/ping", "/ping/", "/auth/register", "/auth/register/", "/auth/login", "/auth/login/").permitAll()
+                .requestMatchers(
+                    "/ping", 
+                    "/ping/",
+                    "/auth/register",
+                    "/auth/register/",
+                    "/auth/login",
+                    "/auth/login/",
+                    "/actuator/health"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));
