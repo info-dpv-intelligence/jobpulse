@@ -15,7 +15,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.Valid;
+import com.jobpulse.job_service.dto.CreatedResponse;
+
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 @RestController
 @RequestMapping("/v1")
@@ -29,13 +34,15 @@ public class JobServiceController {
     }
 
     @GetMapping("/jobs")
-    public List<JobPost> getJobListings(@AuthenticationPrincipal Jwt jwt) {
-        return jobService.getJobListings();
+    public Page<JobPost> getJobListings(
+            @PageableDefault(size = 10) Pageable pageable,
+            @AuthenticationPrincipal Jwt jwt) {
+        return jobService.getJobListings(pageable);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_JOB_POSTER')")
     @PostMapping("/jobs")
-    public JobPost createJob(
+    public CreatedResponse createJob(
             @RequestBody @Valid CreateJobPostRequest createJobPostRequest,
             @AuthenticationPrincipal Jwt jwt) {
         UserContext userContext = UserContext.fromJwt(jwt);

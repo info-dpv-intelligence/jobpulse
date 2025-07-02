@@ -3,6 +3,8 @@ package com.jobpulse.job_service.service;
 import com.jobpulse.job_service.model.JobPost;
 import com.jobpulse.job_service.repository.JobPostRepository;
 
+import com.jobpulse.job_service.dto.CreatedResponse;
+
 import com.jobpulse.job_service.dto.CreateJobPostCommand;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,9 @@ import org.springframework.stereotype.Service;
 import com.jobpulse.job_service.dto.CreateJobPostRequest;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.util.List;
 
@@ -23,11 +28,11 @@ public class JobService {
         this.jobPostRepository = jobPostRepository;
     }
 
-    public List<JobPost> getJobListings() {
-        return jobPostRepository.findAll();
+    public Page<JobPost> getJobListings(Pageable pageable) {
+       return jobPostRepository.findAll(pageable);
     }
 
-    public JobPost createJob(CreateJobPostCommand command) {
+    public CreatedResponse createJob(CreateJobPostCommand command) {
         JobPost jobPost = new JobPost();
         jobPost.setTitle(command.getTitle());
         jobPost.setDescription(command.getDescription());
@@ -36,6 +41,8 @@ public class JobService {
         jobPost.setUpdatedAt(LocalDateTime.now());
         jobPost.setActive(true);
 
-        return jobPostRepository.save(jobPost);
+        JobPost saved = jobPostRepository.save(jobPost);
+        return new CreatedResponse(saved.getId().toString());
+        // emit job posted event
     }
 }
