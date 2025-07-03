@@ -1,22 +1,71 @@
 # JobPulse – Job Posting & Application Management Backend
 
-## 🚀 Mission Statement
-**JobPulse** is a modular, event-driven backend platform that allows companies to post job listings and manage applications, while users can discover and apply for jobs. The system supports role-based authentication, lifecycle management for job applications, real-time job alerts, and Kafka-based event processing – designed to demonstrate scalable Java backend architecture, concurrency, and production readiness.
+**JobPulse** is a modular backend system built with Java and Spring Boot, designed to demonstrate core backend skills for job posting and application management. It is intended as a demonstration project to showcase usage of the Java ecosystem and modern backend architecture patterns.
 
-## 📌 Problem Statement
-Companies need scalable systems to handle job listings, applicant tracking, and communication workflows efficiently. JobPulse addresses this by providing a clean, backend-first platform with async notifications, lifecycle state tracking, and extensible service boundaries.
+## Tech Stack
 
-## 🧠 Tech Stack
 - Java 17, Spring Boot 3
-- Spring Security (JWT Auth)
-- Kafka (event-based communication)
-- PostgreSQL + Redis (persistence + caching)
-- Docker + Docker Compose
-- JUnit + Testcontainers
-- GitHub Actions (CI/CD)
+- Spring Security (JWT-based authentication)
+- Kafka (event-driven communication)
+- PostgreSQL (persistence)
+- Docker, Docker Compose
+- JUnit (testing)
 
-## 📦 Core Modules
-- `auth-service`: Handles login/signup and role-based access.
-- `job-service`: Manages job creation, listing, and Kafka event production.
-- `application-service`: Tracks application state and publishes Kafka events.
-- `alert-worker`: Listens for job events and sends simulated user alerts.
+## Architecture Overview
+
+JobPulse is structured as a set of microservices:
+- **auth-service**: Manages user registration, login, JWT issuance, and refresh token management.
+- **job-service**: Handles job post creation and listing (with basic pagination).
+- **application-service**: Intended to handle application management via events (early stage).
+- **alert-worker**: Placeholder for consuming job/application events (logic not yet fully implemented).
+
+All services are containerized and can be orchestrated with Docker Compose.
+
+## Key Features
+
+- **User Registration & Authentication**: 
+  - Register and log in users, with secure password hashing.
+  - Issue JWT access tokens and refresh tokens.
+  - Role-based access control (roles modeled, limited enforcement).
+- **Job Post Management**: 
+  - Create, list, and paginate job postings.
+  - (CRUD and advanced filtering/search are not fully implemented.)
+- **Event-driven Design (Early Stage)**: 
+  - Kafka integration is scaffolded for events (job creation, application lifecycle), with basic event publishing.
+- **Basic Health Checks**: 
+  - `/ping` and `/actuator/health` endpoints for all services.
+
+## What’s Not Yet Implemented
+
+- No production-grade error handling or input validation.
+- Application management (applying to jobs, tracking application state) is not complete.
+- Alerting/notification worker is a stub.
+- No frontend or admin dashboard.
+- Minimal API documentation and test coverage (work in progress).
+
+## Quick Start
+
+1. Clone the repository.
+2. Ensure Docker, Docker Compose, and `make` are installed.
+3. Start the services with:
+   ```sh
+   make ENV=dev up
+   ```
+4. Access API endpoints (see below).
+
+## Example API Endpoints
+
+- **Auth Service**
+  - `POST /auth/register` – Register a new user.
+  - `POST /auth/login` – Log in and receive JWT.
+- **Job Service**
+  - `GET /v1/jobs` – List all jobs.
+  - `POST /v1/jobs` – Create a new job.
+
+## Intended Use
+
+This repository was created as a demonstration project to showcase Java and Spring Boot backend skills and ecosystem usage. It is not intended for production use, but as a reference for code quality, service design, and rapid prototyping.
+
+---
+
+*This README reflects the current state of the codebase and will be updated as more features are added.*
