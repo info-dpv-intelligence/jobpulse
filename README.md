@@ -1,71 +1,92 @@
 # JobPulse – Job Posting & Application Management Backend
 
-**JobPulse** is a modular backend system built with Java and Spring Boot, designed to demonstrate core backend skills for job posting and application management. It is intended as a demonstration project to showcase usage of the Java ecosystem and modern backend architecture patterns.
+## 🎯 Live Demo
+**JobPulse** is currently hosted on AWS EC2 for demonstration purposes. This live deployment showcases a production-ready distributed system built with Java and Spring Boot.
 
-## Tech Stack
+### 🌐 Live Services
+- **Auth Service**: [http://16.171.9.26:8089](http://16.171.9.26:8089)
+- **Job Service**: [http://16.171.9.26:8084](http://16.171.9.26:8084)
+- **Kafka UI**: [http://16.171.9.26:8082](http://16.171.9.26:8082)
+- **PgAdmin**: [http://16.171.9.26:5050](http://16.171.9.26:5050)
 
+### 🔗 Quick API Tests
+```bash
+# Test Registration
+curl -X POST http://16.171.9.26:8089/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "demo", "email": "demo@example.com", "password": "password123"}'
+
+# Test Authentication
+curl -X POST http://16.171.9.26:8089/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "demo", "password": "password123"}'
+
+# Health Checks
+curl http://16.171.9.26:8089/actuator/health
+curl http://16.171.9.26:8084/actuator/health
+```
+
+## 🚀 Mission Statement
+**JobPulse** is a modular, event-driven backend platform that allows companies to post job listings and manage applications, while users can discover and apply for jobs. The system supports role-based authentication, lifecycle management for job applications, real-time job alerts, and Kafka-based event processing – designed to demonstrate scalable Java backend architecture, concurrency, and production readiness.
+
+## 📌 Problem Statement
+Companies need scalable systems to handle job listings, applicant tracking, and communication workflows efficiently. JobPulse addresses this by providing a clean, backend-first platform with async notifications, lifecycle state tracking, and extensible service boundaries.
+
+## 🧠 Tech Stack
 - Java 17, Spring Boot 3
-- Spring Security (JWT-based authentication)
-- Kafka (event-driven communication)
-- PostgreSQL (persistence)
-- Docker, Docker Compose
-- JUnit (testing)
+- Spring Security (JWT Auth)
+- Kafka (event-based communication)
+- PostgreSQL + Redis (persistence + caching)
+- Docker + Docker Compose
+- JUnit + Testcontainers
+- GitHub Actions (CI/CD)
 
-## Architecture Overview
+## 📦 Core Modules
+- `auth-service`: Handles login/signup and role-based access.
+- `job-service`: Manages job creation, listing, and Kafka event production.
+- `application-service`: Tracks application state and publishes Kafka events.
+- `alert-worker`: Listens for job events and sends simulated user alerts.
 
-JobPulse is structured as a set of microservices:
-- **auth-service**: Manages user registration, login, JWT issuance, and refresh token management.
-- **job-service**: Handles job post creation and listing (with basic pagination).
-- **application-service**: Intended to handle application management via events (early stage).
-- **alert-worker**: Placeholder for consuming job/application events (logic not yet fully implemented).
+## 🛠️ Local Development Setup
 
-All services are containerized and can be orchestrated with Docker Compose.
-
-## Key Features
-
-- **User Registration & Authentication**: 
-  - Register and log in users, with secure password hashing.
-  - Issue JWT access tokens and refresh tokens.
-  - Role-based access control (roles modeled, limited enforcement).
-- **Job Post Management**: 
-  - Create, list, and paginate job postings.
-  - (CRUD and advanced filtering/search are not fully implemented.)
-- **Event-driven Design (Early Stage)**: 
-  - Kafka integration is scaffolded for events (job creation, application lifecycle), with basic event publishing.
-- **Basic Health Checks**: 
-  - `/ping` and `/actuator/health` endpoints for all services.
-
-## What’s Not Yet Implemented
-
-- No production-grade error handling or input validation.
-- Application management (applying to jobs, tracking application state) is not complete.
-- Alerting/notification worker is a stub.
-- No frontend or admin dashboard.
-- Minimal API documentation and test coverage (work in progress).
-
-## Quick Start
-
-1. Clone the repository.
-2. Ensure Docker, Docker Compose, and `make` are installed.
-3. Start the services with:
-   ```sh
-   make ENV=dev up
+### Quick Start
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd jobpulse
    ```
-4. Access API endpoints (see below).
 
-## Example API Endpoints
+2. **Set up environment variables**
+   ```bash
+   cp .env.template .env
+   # Edit .env with your preferred values
+   ```
 
-- **Auth Service**
-  - `POST /auth/register` – Register a new user.
-  - `POST /auth/login` – Log in and receive JWT.
-- **Job Service**
-  - `GET /v1/jobs` – List all jobs.
-  - `POST /v1/jobs` – Create a new job.
+3. **Start the development environment**
+   ```bash
+   # Using Make (recommended)
+   make ENV=dev up
+   
+   # Or using Docker Compose directly
+   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+   ```
 
-## Intended Use
+4. **Verify services are running**
+   ```bash
+   # Check container status
+   docker ps
+   
+   # Test health endpoints
+   curl http://localhost:8080/actuator/health  # Auth Service
+   curl http://localhost:8081/actuator/health  # Job Service
+   ```
 
-This repository was created as a demonstration project to showcase Java and Spring Boot backend skills and ecosystem usage. It is not intended for production use, but as a reference for code quality, service design, and rapid prototyping.
-
----
-
-*This README reflects the current state of the codebase and will be updated as more features are added.*
+### Development URLs
+- **Auth Service**: [http://localhost:8080](http://localhost:8080)
+- **Job Service**: [http://localhost:8081](http://localhost:8081)
+- **Kafka UI**: [http://localhost:8082](http://localhost:8082)
+- **PgAdmin**: [http://localhost:5050](http://localhost:5050)
+- **PostgreSQL** (Auth): `localhost:5435`
+- **PostgreSQL** (Job): `localhost:5436`
+- **Kafka**: `localhost:9092`
+- **Zookeeper**: `localhost:2181`
