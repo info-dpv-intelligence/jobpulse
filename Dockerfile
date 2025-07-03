@@ -6,7 +6,8 @@ RUN ./gradlew clean build -x test
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
 ARG SERVICE_NAME
-COPY --from=build /workspace/${SERVICE_NAME}/build/libs/${SERVICE_NAME}-*.jar app.jar
+# Copy the fat JAR (excludes the -plain.jar file)
+COPY --from=build /workspace/${SERVICE_NAME}/build/libs/${SERVICE_NAME}-*-SNAPSHOT.jar app.jar
 
 # Use a non-root user for security (optional but recommended)
 RUN useradd -ms /bin/bash appuser
