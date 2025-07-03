@@ -45,6 +45,11 @@ services:
       - "5435:5432"
     volumes:
       - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   job-db:
     image: postgres:16.2
@@ -57,7 +62,11 @@ services:
       - "5436:5432"
     volumes:
       - job-db-data:/var/lib/postgresql/data
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobuser -d jobdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   auth-service:
     build:
@@ -69,12 +78,23 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/authdb
       - SPRING_DATASOURCE_USERNAME=authuser
       - SPRING_DATASOURCE_PASSWORD=authpass
+      - JWT_SECRET=your-dev-secret-your-dev-secret-your-dev-secret-your-dev-secret
+      - JWT_EXPIRATION_MS=3600000
+      - REFRESH_EXPIRATION_MS=604800000
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      # OpenAPI Configuration
+      - OPENAPI_DEV_URL=http://localhost:8080
+      - OPENAPI_PROD_URL=
+      - OPENAPI_TITLE=JobPulse Auth Service API (Development)
+      - OPENAPI_VERSION=1.0.0
+      - OPENAPI_DESCRIPTION=Authentication and authorization service for JobPulse platform - Development Environment
     depends_on:
       - auth-db
+      - kafka
 
   job-service:
     build: 
@@ -86,12 +106,23 @@ services:
     ports:
       - "8081:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://job-db:5432/jobdb
       - SPRING_DATASOURCE_USERNAME=jobuser
       - SPRING_DATASOURCE_PASSWORD=jobpass
+      - JWT_SECRET=your-dev-secret-your-dev-secret-your-dev-secret-your-dev-secret
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_CONSUMER_GROUP=job-service-group
+      - USER_EVENTS_TOPIC=user.events
+      # OpenAPI Configuration
+      - OPENAPI_DEV_URL=http://localhost:8081
+      - OPENAPI_PROD_URL=
+      - OPENAPI_TITLE=JobPulse Job Service API (Development)
+      - OPENAPI_VERSION=1.0.0
+      - OPENAPI_DESCRIPTION=Job posting and management service for JobPulse platform - Development Environment
     depends_on:
       - job-db
+      - kafka
 
   pgadmin:
     image: dpage/pgadmin4

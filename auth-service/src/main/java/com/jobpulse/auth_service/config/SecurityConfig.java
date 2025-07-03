@@ -35,12 +35,41 @@ public class SecurityConfig {
                     "/auth/register/",
                     "/auth/login",
                     "/auth/login/",
-                    "/actuator/health"
+                    "/actuator/health",
+                    "/actuator/**",
+                    // OpenAPI/Swagger UI endpoints
+                    "/v3/api-docs/**",
+                    "/v3/api-docs.json",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**",
+                    "/configuration/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> {})
+                .bearerTokenResolver(request -> {
+                    // Don't try to resolve bearer tokens for API docs endpoints
+                    String requestURI = request.getRequestURI();
+                    if (requestURI.startsWith("/v3/api-docs") || 
+                        requestURI.startsWith("/swagger-ui") || 
+                        requestURI.equals("/swagger-ui.html") ||
+                        requestURI.startsWith("/swagger-resources") ||
+                        requestURI.startsWith("/webjars") ||
+                        requestURI.startsWith("/configuration")) {
+                        return null;
+                    }
+                    
+                    // Default behavior for other endpoints
+                    String authHeader = request.getHeader("Authorization");
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        return authHeader.substring(7);
+                    }
+                    return null;
+                })
+            );
         return http.build();
     }
-    //  .oauth2ResourceServer(oauth2 -> oauth2.jwt());
 }

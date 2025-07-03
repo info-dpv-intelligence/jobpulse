@@ -45,7 +45,20 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/ping", "/ping/", "/actuator/health").permitAll()
+                .requestMatchers(
+                    "/ping", 
+                    "/ping/", 
+                    "/actuator/health",
+                    "/actuator/**",
+                    // OpenAPI/Swagger UI endpoints
+                    "/v3/api-docs/**",
+                    "/v3/api-docs.json",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**",
+                    "/configuration/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

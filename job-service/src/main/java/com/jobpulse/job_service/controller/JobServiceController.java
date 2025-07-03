@@ -22,8 +22,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @RestController
 @RequestMapping("/v1")
+@Tag(name = "Job Management", description = "Job posting and listing operations")
 public class JobServiceController {
 
     private final JobService jobService;
@@ -34,7 +45,27 @@ public class JobServiceController {
     }
 
     @GetMapping("/jobs")
+    @Operation(
+        summary = "Get job listings",
+        description = "Retrieve paginated list of job postings"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Successfully retrieved job listings",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = Page.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - JWT token required"
+        )
+    })
+    @SecurityRequirement(name = "bearer-jwt")
     public Page<JobPost> getJobListings(
+            @Parameter(description = "Pagination parameters")
             @PageableDefault(size = 10) Pageable pageable,
             @AuthenticationPrincipal Jwt jwt) {
         return jobService.getJobListings(pageable);
@@ -42,7 +73,38 @@ public class JobServiceController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_JOB_POSTER')")
     @PostMapping("/jobs")
+    @Operation(
+        summary = "Create new job posting",
+        description = "Create a new job posting (requires ADMIN or JOB_POSTER role)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Job created successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = CreatedResponse.class),
+                examples = @ExampleObject(
+                    value = "{\"id\": \"123\", \"message\": \"Job created successfully\"}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid job posting data"
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - JWT token required"
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - insufficient permissions"
+        )
+    })
+    @SecurityRequirement(name = "bearer-jwt")
     public CreatedResponse createJob(
+            @Parameter(description = "Job posting details", required = true)
             @RequestBody @Valid CreateJobPostRequest createJobPostRequest,
             @AuthenticationPrincipal Jwt jwt) {
         UserContext userContext = UserContext.fromJwt(jwt);
