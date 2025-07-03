@@ -6,6 +6,7 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    restart: unless-stopped
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -19,6 +20,7 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    restart: unless-stopped
 
   auth-db:
     image: postgres:16
@@ -28,6 +30,7 @@ services:
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
     volumes:
       - auth-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
 
   job-db:
     image: postgres:16
@@ -37,6 +40,7 @@ services:
       POSTGRES_PASSWORD: ${JOB_DB_PASSWORD}
     volumes:
       - job-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
 
   auth-service:
     build:
@@ -57,7 +61,8 @@ services:
       - auth-db
       - kafka
     ports:
-      - "8080:8080"
+      - "8089:8080"
+    restart: unless-stopped
 
   job-service:
     build:
@@ -78,7 +83,8 @@ services:
       - job-db
       - kafka
     ports:
-      - "8081:8080"
+      - "8084:8080"
+    restart: unless-stopped
 
 volumes:
   auth-db-data:
