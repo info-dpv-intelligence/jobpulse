@@ -5,6 +5,7 @@ import com.jobpulse.job_service.service.JobServiceContract;
 import com.jobpulse.job_service.dto.CreateJobPostCommand;
 import com.jobpulse.job_service.dto.CreateJobPostRequest;
 import com.jobpulse.job_service.dto.UserContext;
+import com.jobpulse.job_service.dto.JobListingsResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,12 +57,31 @@ public class JobServiceController {
             description = "Successfully retrieved job listings",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = Page.class)
+                schema = @Schema(implementation = JobListingsResponse.class),
+                examples = @ExampleObject(
+                    value = "{\"jobs\": [{\"id\": \"123\", \"title\": \"Software Engineer\", \"description\": \"Join our team...\"}], \"totalElements\": 1, \"totalPages\": 1}"
+                )
             )
         ),
         @ApiResponse(
             responseCode = "401",
-            description = "Unauthorized - JWT token required"
+            description = "Unauthorized - JWT token required",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"error\": \"Unauthorized access\", \"code\": \"UNAUTHORIZED\"}"
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = "{\"error\": \"Internal server error\", \"code\": \"INTERNAL_ERROR\"}"
+                )
+            )
         )
     })
     @SecurityRequirement(name = "bearer-jwt")

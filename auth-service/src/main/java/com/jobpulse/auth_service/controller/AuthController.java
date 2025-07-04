@@ -1,6 +1,8 @@
 package com.jobpulse.auth_service.controller;
 
 import com.jobpulse.auth_service.dto.RegisterRequest;
+import com.jobpulse.auth_service.dto.UserRegistrationResponse;
+import com.jobpulse.auth_service.dto.AuthResponse;
 import com.jobpulse.auth_service.service.UserServiceContract;
 import jakarta.validation.Valid;
 import com.jobpulse.auth_service.dto.LoginRequest;
@@ -35,12 +37,13 @@ public class AuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(
-            responseCode = "201",
+            responseCode = "200",
             description = "User registered successfully",
             content = @Content(
                 mediaType = "application/json",
+                schema = @Schema(implementation = UserRegistrationResponse.class),
                 examples = @ExampleObject(
-                    value = "{\"message\": \"User registered successfully\", \"userId\": \"123\"}"
+                    value = "{\"userId\": \"123e4567-e89b-12d3-a456-426614174000\", \"message\": \"User registered successfully\"}"
                 )
             )
         ),
@@ -50,7 +53,7 @@ public class AuthController {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"error\": \"User already exists\"}"
+                    value = "{\"error\": \"Email already in use\", \"code\": \"EMAIL_EXISTS\"}"
                 )
             )
         )
@@ -74,7 +77,7 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(
         summary = "User login",
-        description = "Authenticate user and return JWT token"
+        description = "Authenticate user and return JWT tokens"
     )
     @ApiResponses(value = {
         @ApiResponse(
@@ -82,8 +85,9 @@ public class AuthController {
             description = "Login successful",
             content = @Content(
                 mediaType = "application/json",
+                schema = @Schema(implementation = AuthResponse.class),
                 examples = @ExampleObject(
-                    value = "{\"accessToken\": \"jwt-token-here\", \"tokenType\": \"Bearer\", \"expiresIn\": 3600}"
+                    value = "{\"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\", \"refreshToken\": \"refresh-token-here\"}"
                 )
             )
         ),
@@ -93,7 +97,7 @@ public class AuthController {
             content = @Content(
                 mediaType = "application/json",
                 examples = @ExampleObject(
-                    value = "{\"error\": \"Invalid username or password\"}"
+                    value = "{\"error\": \"Invalid credentials\", \"code\": \"INVALID_CREDENTIALS\"}"
                 )
             )
         )
