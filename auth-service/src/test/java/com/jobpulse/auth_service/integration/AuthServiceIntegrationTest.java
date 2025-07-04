@@ -22,8 +22,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Integration tests for auth-service endpoints with real database.
+ * Full integration tests for auth-service API endpoints.
+ * 
+ * This test uses @SpringBootTest to load the complete application context,
+ * including real service implementations, database connections, and all Spring components.
+ * It tests the full request/response cycle from HTTP to database.
+ * 
  * Uses H2 in-memory database configured in application-test.properties.
+ * 
+ * Note: This is different from AuthControllerTest which only tests the controller layer
+ * with mocked dependencies (unit test approach).
  */
 @SpringBootTest
 @AutoConfigureWebMvc
