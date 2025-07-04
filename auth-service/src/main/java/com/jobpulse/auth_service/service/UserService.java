@@ -16,19 +16,20 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService {
+public class UserService implements UserServiceContract {
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private JwtService jwtService;
+    private JwtServiceContract jwtService;
 
     @Autowired
     private UserEventProducer userEventProducer;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Override
     public ResponseEntity<?> registerUser(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.badRequest().body("Email already in use");
@@ -53,6 +54,7 @@ public class UserService {
         }
     }
 
+    @Override
     public ResponseEntity<?> login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
