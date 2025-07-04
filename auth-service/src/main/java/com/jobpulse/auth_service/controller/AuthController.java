@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -56,7 +58,17 @@ public class AuthController {
     public ResponseEntity<?> register(
         @Parameter(description = "User registration details", required = true)
         @Valid @RequestBody RegisterRequest request) {
-        return userService.registerUser(request);
+        
+        var result = userService.registerUser(request);
+        
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result.getData());
+        } else {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", result.getErrorMessage(),
+                "code", result.getErrorCode()
+            ));
+        }
     }
 
     @PostMapping("/login")
@@ -89,6 +101,17 @@ public class AuthController {
     public ResponseEntity<?> login(
         @Parameter(description = "User login credentials", required = true)
         @Valid @RequestBody LoginRequest request) {
-        return userService.login(request);
+        
+        var result = userService.login(request);
+        
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result.getData());
+        } else {
+            int statusCode = "INVALID_CREDENTIALS".equals(result.getErrorCode()) ? 401 : 400;
+            return ResponseEntity.status(statusCode).body(Map.of(
+                "error", result.getErrorMessage(),
+                "code", result.getErrorCode()
+            ));
+        }
     }
 }

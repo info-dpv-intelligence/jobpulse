@@ -1,9 +1,9 @@
 package com.jobpulse.job_service.service;
 
-import com.jobpulse.job_service.model.JobPost;
+import com.jobpulse.job_service.dto.ServiceResult;
 import com.jobpulse.job_service.dto.CreatedResponse;
 import com.jobpulse.job_service.dto.CreateJobPostCommand;
-import org.springframework.data.domain.Page;
+import com.jobpulse.job_service.dto.JobListingsResponse;
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -17,15 +17,15 @@ public interface JobServiceContract {
      * Retrieves a paginated list of job posts.
      *
      * @param pageable pagination parameters (page number, size, sorting)
-     * @return paginated list of job posts
+     * @return service result with paginated job listings or error details
      */
-    Page<JobPost> getJobListings(Pageable pageable);
+    ServiceResult<JobListingsResponse> getJobListings(Pageable pageable);
     
     /**
      * Creates a new job posting.
      *
      * @param command the job creation command containing job details
-     * @return response containing the created job's ID
+     * @return service result with created job response or error details
      */
-    CreatedResponse createJob(CreateJobPostCommand command);
+    ServiceResult<CreatedResponse> createJob(CreateJobPostCommand command);
 }

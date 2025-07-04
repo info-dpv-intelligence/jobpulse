@@ -5,6 +5,8 @@ import com.jobpulse.auth_service.dto.LoginRequest;
 import com.jobpulse.auth_service.dto.AuthResponse;
 import com.jobpulse.auth_service.dto.GenerateTokenRequest;
 import com.jobpulse.auth_service.dto.RefreshTokenRequest;
+import com.jobpulse.auth_service.dto.ServiceResult;
+import com.jobpulse.auth_service.dto.UserRegistrationResponse;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
 
@@ -13,7 +15,6 @@ import com.jobpulse.common_events.model.UserEvent;
 import com.jobpulse.auth_service.model.RefreshToken;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,10 +33,11 @@ public class UserService implements UserServiceContract {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
-    public ResponseEntity<?> registerUser(RegisterRequest request) {
+    public ServiceResult<UserRegistrationResponse> registerUser(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.badRequest().body("Email already in use");
+            return ServiceResult.failure("Email already in use", "EMAIL_EXISTS");
         }
+        
         try {
             User user = new User();
             user.setEmail(request.getEmail());
@@ -49,29 +51,35 @@ public class UserService implements UserServiceContract {
             );
             userEventProducer.sendUserEvent(event);
 
-            return ResponseEntity.ok("User registered successfully");
+            UserRegistrationResponse response = UserRegistrationResponse.success(user.getId().toString());
+            return ServiceResult.success(response);
         } catch (Exception e) {
             // @todo add logging
-            return ResponseEntity.internalServerError().body("Registration failed: " + e.getMessage());
+            return ServiceResult.failure("Registration failed: " + e.getMessage(), "REGISTRATION_ERROR");
         }
     }
 
     @Override
-    public ResponseEntity<?> login(LoginRequest request) {
+    public ServiceResult<AuthResponse> login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(401).body("Invalid credentials");
+            return ServiceResult.failure("Invalid credentials", "INVALID_CREDENTIALS");
         }
         
-        // Create command objects for JWT operations
-        GenerateTokenRequest tokenRequest = new GenerateTokenRequest(user.getId(), user.getRole(), user.getEmail());
-        RefreshTokenRequest refreshRequest = new RefreshTokenRequest(user.getId());
-        
-        String jwt = jwtService.generateToken(tokenRequest);
-        jwtService.revokeAllRefreshTokens(refreshRequest);
-        RefreshToken refreshToken = jwtService.generateRefreshToken(refreshRequest);
-        AuthResponse authResponse = new AuthResponse(jwt, refreshToken.getToken());
+        try {
+            // Create command objects for JWT operations
+            GenerateTokenRequest tokenRequest = new GenerateTokenRequest(user.getId(), user.getRole(), user.getEmail());
+            RefreshTokenRequest refreshRequest = new RefreshTokenRequest(user.getId());
+            
+            String jwt = jwtService.generateToken(tokenRequest);
+            jwtService.revokeAllRefreshTokens(refreshRequest);
+            RefreshToken refreshToken = jwtService.generateRefreshToken(refreshRequest);
+            AuthResponse authResponse = new AuthResponse(jwt, refreshToken.getToken());
 
-        return ResponseEntity.ok(authResponse);
+            return ServiceResult.success(authResponse);
+        } catch (Exception e) {
+            // @todo add logging
+            return ServiceResult.failure("Authentication failed: " + e.getMessage(), "AUTH_ERROR");
+        }
     }
 }

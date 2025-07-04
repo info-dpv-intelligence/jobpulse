@@ -2,7 +2,9 @@ package com.jobpulse.auth_service.service;
 
 import com.jobpulse.auth_service.dto.RegisterRequest;
 import com.jobpulse.auth_service.dto.LoginRequest;
-import org.springframework.http.ResponseEntity;
+import com.jobpulse.auth_service.dto.ServiceResult;
+import com.jobpulse.auth_service.dto.UserRegistrationResponse;
+import com.jobpulse.auth_service.dto.AuthResponse;
 
 /**
  * Service contract interface for user management operations.
@@ -15,15 +17,15 @@ public interface UserServiceContract {
      * Registers a new user in the system.
      *
      * @param request the registration request containing user details
-     * @return response entity with success message or error details
+     * @return service result with registration response or error details
      */
-    ResponseEntity<?> registerUser(RegisterRequest request);
+    ServiceResult<UserRegistrationResponse> registerUser(RegisterRequest request);
     
     /**
      * Authenticates a user and returns access and refresh tokens.
      *
      * @param request the login request containing user credentials
-     * @return response entity with authentication tokens or error details
+     * @return service result with authentication tokens or error details
      */
-    ResponseEntity<?> login(LoginRequest request);
+    ServiceResult<AuthResponse> login(LoginRequest request);
 }

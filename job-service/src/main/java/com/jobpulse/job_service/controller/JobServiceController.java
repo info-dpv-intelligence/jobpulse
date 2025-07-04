@@ -13,10 +13,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import jakarta.validation.Valid;
 import com.jobpulse.job_service.dto.CreatedResponse;
 
 import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -63,11 +65,21 @@ public class JobServiceController {
         )
     })
     @SecurityRequirement(name = "bearer-jwt")
-    public Page<JobPost> getJobListings(
+    public ResponseEntity<?> getJobListings(
             @Parameter(description = "Pagination parameters")
             @PageableDefault(size = 10) Pageable pageable,
             @AuthenticationPrincipal Jwt jwt) {
-        return jobService.getJobListings(pageable);
+        
+        var result = jobService.getJobListings(pageable);
+        
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result.getData());
+        } else {
+            return ResponseEntity.internalServerError().body(Map.of(
+                "error", result.getErrorMessage(),
+                "code", result.getErrorCode()
+            ));
+        }
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_JOB_POSTER')")
@@ -102,16 +114,26 @@ public class JobServiceController {
         )
     })
     @SecurityRequirement(name = "bearer-jwt")
-    public CreatedResponse createJob(
+    public ResponseEntity<?> createJob(
             @Parameter(description = "Job posting details", required = true)
             @RequestBody @Valid CreateJobPostRequest createJobPostRequest,
             @AuthenticationPrincipal Jwt jwt) {
+        
         UserContext userContext = UserContext.fromJwt(jwt);
         CreateJobPostCommand command = new CreateJobPostCommand();
         command.setTitle(createJobPostRequest.getTitle());
         command.setDescription(createJobPostRequest.getDescription());
         command.setJobPosterId(userContext.getId());
 
-        return jobService.createJob(command);
+        var result = jobService.createJob(command);
+        
+        if (result.isSuccess()) {
+            return ResponseEntity.status(201).body(result.getData());
+        } else {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", result.getErrorMessage(),
+                "code", result.getErrorCode()
+            ));
+        }
     }
 }
