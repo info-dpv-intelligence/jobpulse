@@ -1,8 +1,7 @@
 package com.jobpulse.job_service.controller;
 
 import com.jobpulse.job_service.model.JobPost;
-import com.jobpulse.job_service.service.JobService;
-
+import com.jobpulse.job_service.service.JobServiceContract;
 import com.jobpulse.job_service.dto.CreateJobPostCommand;
 import com.jobpulse.job_service.dto.CreateJobPostRequest;
 import com.jobpulse.job_service.dto.UserContext;
@@ -37,10 +36,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 @Tag(name = "Job Management", description = "Job posting and listing operations")
 public class JobServiceController {
 
-    private final JobService jobService;
+    private final JobServiceContract jobService;
 
     @Autowired
-    public JobServiceController(JobService jobService) {
+    public JobServiceController(JobServiceContract jobService) {
         this.jobService = jobService;
     }
 
