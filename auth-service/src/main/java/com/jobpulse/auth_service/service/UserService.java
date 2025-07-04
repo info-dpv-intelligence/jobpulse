@@ -3,6 +3,8 @@ package com.jobpulse.auth_service.service;
 import com.jobpulse.auth_service.dto.RegisterRequest;
 import com.jobpulse.auth_service.dto.LoginRequest;
 import com.jobpulse.auth_service.dto.AuthResponse;
+import com.jobpulse.auth_service.dto.GenerateTokenRequest;
+import com.jobpulse.auth_service.dto.RefreshTokenRequest;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
 
@@ -60,9 +62,14 @@ public class UserService implements UserServiceContract {
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
-        String jwt = jwtService.generateToken(user);
-        jwtService.revokeAllRefreshTokens(user);
-        RefreshToken refreshToken = jwtService.generateRefreshToken(user);
+        
+        // Create command objects for JWT operations
+        GenerateTokenRequest tokenRequest = new GenerateTokenRequest(user.getId(), user.getRole(), user.getEmail());
+        RefreshTokenRequest refreshRequest = new RefreshTokenRequest(user.getId());
+        
+        String jwt = jwtService.generateToken(tokenRequest);
+        jwtService.revokeAllRefreshTokens(refreshRequest);
+        RefreshToken refreshToken = jwtService.generateRefreshToken(refreshRequest);
         AuthResponse authResponse = new AuthResponse(jwt, refreshToken.getToken());
 
         return ResponseEntity.ok(authResponse);

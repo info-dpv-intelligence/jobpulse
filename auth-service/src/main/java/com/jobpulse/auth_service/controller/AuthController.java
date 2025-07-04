@@ -1,7 +1,7 @@
 package com.jobpulse.auth_service.controller;
 
 import com.jobpulse.auth_service.dto.RegisterRequest;
-import com.jobpulse.auth_service.service.UserService;
+import com.jobpulse.auth_service.service.UserServiceContract;
 import jakarta.validation.Valid;
 import com.jobpulse.auth_service.dto.LoginRequest;
 
@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 public class AuthController {
 
     @Autowired
-    private UserService userService;
+    private UserServiceContract userService;
 
     @PostMapping("/register")
     @Operation(

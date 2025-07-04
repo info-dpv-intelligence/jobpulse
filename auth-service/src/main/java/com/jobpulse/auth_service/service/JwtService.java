@@ -1,8 +1,11 @@
 package com.jobpulse.auth_service.service;
 
+import com.jobpulse.auth_service.dto.GenerateTokenRequest;
+import com.jobpulse.auth_service.dto.RefreshTokenRequest;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.model.RefreshToken;
 import com.jobpulse.auth_service.repository.RefreshTokenRepository;
+import com.jobpulse.auth_service.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 
 @Service
-public class JwtService {
+public class JwtService implements JwtServiceContract {
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -32,28 +35,35 @@ public class JwtService {
     private long refreshExpirationMs;
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public JwtService(RefreshTokenRepository refreshTokenRepository) {
+    public JwtService(RefreshTokenRepository refreshTokenRepository, UserRepository userRepository) {
         this.refreshTokenRepository = refreshTokenRepository;
+        this.userRepository = userRepository;
     }
 
-    public String generateToken(User user) {
+    @Override
+    public String generateToken(GenerateTokenRequest request) {
         Instant now = Instant.now();
 
         return Jwts.builder()
-            .subject(user.getId().toString())
-            .claim("role", user.getRole().name())
+            .subject(request.getUserId().toString())
+            .claim("role", request.getRole().name())
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plusMillis(jwtExpirationMs)))
             .signWith(getSigningKey())
             .compact();
     }
 
-    public void revokeAllRefreshTokens(User user) {
+    @Override
+    public void revokeAllRefreshTokens(RefreshTokenRequest request) {
+        User user = userRepository.findById(request.getUserId())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
         List<RefreshToken> tokens = refreshTokenRepository.findAllByUser(user);
         for (RefreshToken token : tokens) {
             if (!token.isRevoked()) {
@@ -63,7 +73,11 @@ public class JwtService {
         }
     }
 
-    public RefreshToken generateRefreshToken(User user) {
+    @Override
+    public RefreshToken generateRefreshToken(RefreshTokenRequest request) {
+        User user = userRepository.findById(request.getUserId())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+            
         String token = generateSecureToken();
         Instant expiresAt = Instant.now().plusMillis(refreshExpirationMs);
 
