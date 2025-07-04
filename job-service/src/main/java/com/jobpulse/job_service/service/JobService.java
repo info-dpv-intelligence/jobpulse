@@ -19,7 +19,7 @@ import org.springframework.data.web.PageableDefault;
 import java.util.List;
 
 @Service
-public class JobService {
+public class JobService implements JobServiceContract {
 
     private final JobPostRepository jobPostRepository;
 
@@ -28,10 +28,12 @@ public class JobService {
         this.jobPostRepository = jobPostRepository;
     }
 
+    @Override
     public Page<JobPost> getJobListings(Pageable pageable) {
        return jobPostRepository.findAll(pageable);
     }
 
+    @Override
     public CreatedResponse createJob(CreateJobPostCommand command) {
         JobPost jobPost = new JobPost();
         jobPost.setTitle(command.getTitle());
