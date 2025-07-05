@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # Test Prometheus with automated testing configuration
+  prometheus-test:
+    image: prom/prometheus:v2.45.0
+    container_name: jobpulse-prometheus-test
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./observability/environments/test/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./observability/alerts:/etc/prometheus/alerts
+      - prometheus-test-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=3d'
+      - '--web.enable-lifecycle'
+      - '--log.level=info'
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-test
+    environment:
+      - ENVIRONMENT=test
+    labels:
+      - "environment=test"
+      - "service=prometheus"
+
+  # Test Grafana with test-specific configuration
+  grafana-test:
+    image: grafana/grafana:10.0.0
+    container_name: jobpulse-grafana-test
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=jobpulse-test-456
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_LOG_LEVEL=info
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+    volumes:
+      - grafana-test-data:/var/lib/grafana
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./observability/environments/test/datasources:/etc/grafana/provisioning/datasources
+      - ./observability/environments/test/dashboards:/etc/grafana/provisioning/dashboards/test
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-test
+    depends_on:
+      - prometheus-test
+    labels:
+      - "environment=test"
+      - "service=grafana"
+
+  # Test Jaeger with moderate retention
+  jaeger-test:
+    image: jaegertracing/all-in-one:1.47
+    container_name: jobpulse-jaeger-test
+    ports:
+      - "16687:16686"  # Jaeger UI
+      - "14251:14250"  # gRPC
+      - "4319:4317"    # OTLP gRPC receiver
+      - "4320:4318"    # OTLP HTTP receiver
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - LOG_LEVEL=info
+      - SPAN_STORAGE_TYPE=memory
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-test
+    labels:
+      - "environment=test"
+      - "service=jaeger"
+
+  # Test Load Generator for automated testing
+  load-generator-test:
+    image: alpine/curl:latest
+    container_name: jobpulse-load-generator-test
+    command: >
+      sh -c "
+        echo 'Starting load generation for test environment...';
+        while true; do
+          curl -s http://auth-service:8080/actuator/health || true;
+          curl -s http://job-service:8080/actuator/health || true;
+          sleep 5;
+        done
+      "
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-test
+      - jobpulse-network
+    labels:
+      - "environment=test"
+      - "service=load-generator"
+
+  # Postgres Exporter for test environment
+  postgres-exporter-test:
+    image: prometheuscommunity/postgres-exporter:v0.13.2
+    container_name: jobpulse-postgres-exporter-test
+    ports:
+      - "9188:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://jobpulse_user:jobpulse_password@postgres:5432/jobpulse_test_db?sslmode=disable
+      - PG_EXPORTER_LOG_LEVEL=info
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-test
+      - jobpulse-network
+    labels:
+      - "environment=test"
+      - "service=postgres-exporter"
+
+volumes:
+  prometheus-test-data:
+  grafana-test-data:
+
+networks:
+  jobpulse-observability-test:
+    driver: bridge
+    labels:
+      - "environment=test"
+      - "project=jobpulse"
+  jobpulse-network:
+    external: true

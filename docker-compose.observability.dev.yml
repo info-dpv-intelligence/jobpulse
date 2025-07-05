@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Development Prometheus with enhanced configuration
+  prometheus-dev:
+    image: prom/prometheus:v2.45.0
+    container_name: jobpulse-prometheus-dev
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/environments/dev/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./observability/alerts:/etc/prometheus/alerts
+      - prometheus-dev-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+      - '--log.level=debug'
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-dev
+    environment:
+      - ENVIRONMENT=dev
+
+  # Development Grafana with dev-specific dashboards
+  grafana-dev:
+    image: grafana/grafana:10.0.0
+    container_name: jobpulse-grafana-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=jobpulse-dev-123
+      - GF_USERS_ALLOW_SIGN_UP=true
+      - GF_USERS_ALLOW_ORG_CREATE=true
+      - GF_LOG_LEVEL=debug
+      - GF_FEATURE_TOGGLES_ENABLE=newNavigation
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-clock-panel
+    volumes:
+      - grafana-dev-data:/var/lib/grafana
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./observability/environments/dev/datasources:/etc/grafana/provisioning/datasources
+      - ./observability/environments/dev/dashboards:/etc/grafana/provisioning/dashboards/dev
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-dev
+    depends_on:
+      - prometheus-dev
+
+  # Development Jaeger with verbose logging
+  jaeger-dev:
+    image: jaegertracing/all-in-one:1.47
+    container_name: jobpulse-jaeger-dev
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14250:14250"  # gRPC
+      - "4317:4317"    # OTLP gRPC receiver
+      - "4318:4318"    # OTLP HTTP receiver
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - LOG_LEVEL=debug
+      - QUERY_MAX_CLOCK_SKEW_ADJUSTMENT=0
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-dev
+
+  # Postgres Exporter for development
+  postgres-exporter-dev:
+    image: prometheuscommunity/postgres-exporter:v0.13.2
+    container_name: jobpulse-postgres-exporter-dev
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://jobpulse_user:jobpulse_password@postgres:5432/jobpulse_db?sslmode=disable
+      - PG_EXPORTER_LOG_LEVEL=debug
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-dev
+      - jobpulse-network
+
+  # Kafka Exporter for development
+  kafka-exporter-dev:
+    image: danielqsj/kafka-exporter:v1.6.0
+    container_name: jobpulse-kafka-exporter-dev
+    ports:
+      - "9308:9308"
+    command:
+      - '--kafka.server=kafka:9092'
+      - '--log.level=debug'
+    restart: unless-stopped
+    networks:
+      - jobpulse-observability-dev
+      - jobpulse-network
+
+volumes:
+  prometheus-dev-data:
+  grafana-dev-data:
+
+networks:
+  jobpulse-observability-dev:
+    driver: bridge
+    labels:
+      - "environment=dev"
+      - "project=jobpulse"
+  jobpulse-network:
+    external: true

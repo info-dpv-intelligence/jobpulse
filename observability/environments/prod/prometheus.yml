@@ -1,0 +1,103 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  external_labels:
+    environment: 'prod'
+    cluster: 'jobpulse-prod'
+    region: '${REGION:-eu-west-1}'
+
+rule_files:
+  - "alerts/prod-alerts.yml"
+  - "alerts/critical-alerts.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'auth-service-prod'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['${AUTH_SERVICE_HOST:-auth-service}:8080']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'auth-service-prod'
+      - target_label: environment
+        replacement: 'prod'
+      - target_label: team
+        replacement: 'platform'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: '^(http_server_requests_seconds.*|jvm_.*|auth_.*|hikaricp_.*|system_.*)$'
+        action: keep
+
+  - job_name: 'job-service-prod'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['${JOB_SERVICE_HOST:-job-service}:8080']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'job-service-prod'
+      - target_label: environment
+        replacement: 'prod'
+      - target_label: team
+        replacement: 'platform'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: '^(http_server_requests_seconds.*|jvm_.*|job_.*|hikaricp_.*|system_.*)$'
+        action: keep
+
+  # Production infrastructure monitoring
+  - job_name: 'postgres-exporter-prod'
+    static_configs:
+      - targets: ['${POSTGRES_EXPORTER_HOST:-postgres-exporter}:9187']
+    scrape_interval: 30s
+    relabel_configs:
+      - target_label: environment
+        replacement: 'prod'
+      - target_label: service
+        replacement: 'database'
+
+  - job_name: 'kafka-exporter-prod'
+    static_configs:
+      - targets: ['${KAFKA_EXPORTER_HOST:-kafka-exporter}:9308']
+    scrape_interval: 30s
+    relabel_configs:
+      - target_label: environment
+        replacement: 'prod'
+      - target_label: service
+        replacement: 'messaging'
+
+  # Node exporter for system metrics in production
+  - job_name: 'node-exporter-prod'
+    static_configs:
+      - targets: ['${NODE_EXPORTER_HOST:-node-exporter}:9100']
+    scrape_interval: 30s
+    relabel_configs:
+      - target_label: environment
+        replacement: 'prod'
+      - target_label: service
+        replacement: 'system'
+
+  # Blackbox exporter for external endpoint monitoring
+  - job_name: 'blackbox-prod'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://your-domain.com/api/health
+        - https://your-domain.com/actuator/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+      - target_label: environment
+        replacement: 'prod'

@@ -1,0 +1,64 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  external_labels:
+    environment: 'test'
+    cluster: 'jobpulse-test'
+
+rule_files:
+  - "alerts/test-alerts.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'auth-service-test'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['auth-service:8080']  # Internal container name for test
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'auth-service-test'
+      - target_label: environment
+        replacement: 'test'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: '^(http_server_requests_seconds.*|jvm_.*|auth_.*|hikaricp_.*)$'
+        action: keep
+
+  - job_name: 'job-service-test'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['job-service:8080']  # Internal container name for test
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'job-service-test'
+      - target_label: environment
+        replacement: 'test'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: '^(http_server_requests_seconds.*|jvm_.*|job_.*|hikaricp_.*)$'
+        action: keep
+
+  # Test environment specific configuration
+  - job_name: 'postgres-exporter-test'
+    static_configs:
+      - targets: ['postgres:9187']
+    scrape_interval: 15s
+    relabel_configs:
+      - target_label: environment
+        replacement: 'test'
+
+  # Test load generators (if any)
+  - job_name: 'test-load-generator'
+    static_configs:
+      - targets: ['load-generator:8080']
+    scrape_interval: 5s
+    relabel_configs:
+      - target_label: environment
+        replacement: 'test'

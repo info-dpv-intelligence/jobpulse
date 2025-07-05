@@ -139,3 +139,7 @@ services:
 volumes:
   auth-db-data:
   job-db-data:
+
+networks:
+  default:
+    name: jobpulse-network
