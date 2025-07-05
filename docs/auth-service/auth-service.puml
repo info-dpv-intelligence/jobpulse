@@ -1,16 +1,171 @@
-@startuml
-
-user "Job Applicant/Job Poster" as "User" << (U,#FFAAAA) >>
-system "Auth Service" as authService
-
-rectangle "User Management" {
-    usecase "Register User" as UC1
-    usecase "Login User" as UC2
-
-    UC1 --> authService : "POST /register"
-    authService --> UC1 : "User Created"
-    UC2 --> authService : "POST /login"
-    authService --> UC2 : "Authentication Token"
+@startuml auth-service-architecture
+!theme plain
+skinparam class {
+    BackgroundColor LightBlue
+    BorderColor Black
+    ArrowColor Black
 }
+
+title JobPulse Auth Service Architecture
+
+package "Controllers" {
+    class AuthController {
+        -userService: UserServiceContract
+        +register(RegisterRequest): ResponseEntity<?>
+        +login(LoginRequest): ResponseEntity<?>
+    }
+    
+    class PingController {
+        +ping(): String
+        +protectedPing(): String
+    }
+}
+
+package "Services" {
+    interface UserServiceContract {
+        +registerUser(RegisterRequest): ServiceResult<UserRegistrationResponse>
+        +login(LoginRequest): ServiceResult<AuthResponse>
+    }
+    
+    class UserService {
+        -userRepository: UserRepository
+        -jwtService: JwtServiceContract
+        -userEventProducer: UserEventProducer
+        -passwordEncoder: BCryptPasswordEncoder
+        +registerUser(RegisterRequest): ServiceResult<UserRegistrationResponse>
+        +login(LoginRequest): ServiceResult<AuthResponse>
+    }
+    
+    interface JwtServiceContract {
+        +generateToken(GenerateTokenRequest): String
+        +generateRefreshToken(RefreshTokenRequest): RefreshToken
+        +revokeAllRefreshTokens(RefreshTokenRequest): void
+    }
+    
+    class JwtService {
+        +generateToken(GenerateTokenRequest): String
+        +generateRefreshToken(RefreshTokenRequest): RefreshToken
+        +revokeAllRefreshTokens(RefreshTokenRequest): void
+    }
+}
+
+package "Repositories" {
+    interface UserRepository {
+        +existsByEmail(String): boolean
+        +findByEmail(String): User
+        +save(User): User
+    }
+}
+
+package "Domain" {
+    class User {
+        +id: UUID
+        +email: String
+        +password: String
+        +role: UserRole
+    }
+    
+    enum UserRole {
+        ADMIN
+        JOB_POSTER
+        JOB_APPLICANT
+    }
+    
+    class RefreshToken {
+        +token: String
+        +expiresAt: DateTime
+        +userId: UUID
+    }
+}
+
+package "DTOs" {
+    class "ServiceResult<T>" {
+        -success: boolean
+        -data: T
+        -errorMessage: String
+        -errorCode: String
+        +{static} success(T): ServiceResult<T>
+        +{static} failure(String, String): ServiceResult<T>
+        +isSuccess(): boolean
+        +isFailure(): boolean
+    }
+    
+    class RegisterRequest {
+        +email: String
+        +password: String
+        +role: UserRole
+    }
+    
+    class LoginRequest {
+        +email: String
+        +password: String
+    }
+    
+    class AuthResponse {
+        +accessToken: String
+        +refreshToken: String
+    }
+    
+    class UserRegistrationResponse {
+        +userId: String
+        +message: String
+        +{static} success(String): UserRegistrationResponse
+    }
+}
+
+package "Events" {
+    class UserEventProducer {
+        +sendUserEvent(UserEvent): void
+    }
+    
+    class UserEvent {
+        -eventType: EventType
+        -userId: String
+        -email: String
+        +{static} created(String, String): UserEvent
+        +{static} updated(String, String): UserEvent
+    }
+    
+    enum EventType {
+        CREATED
+        UPDATED
+    }
+}
+
+package "Observability" {
+    class EndpointMetricsAspect {
+        -meterRegistry: MeterRegistry
+        +measureEndpoint(ProceedingJoinPoint): Object
+    }
+}
+
+package "Configuration" {
+    class SecurityConfig {
+        +filterChain(HttpSecurity): SecurityFilterChain
+    }
+    
+    class OpenApiConfig {
+        +openAPI(): OpenAPI
+    }
+}
+
+AuthController --> UserServiceContract : uses
+UserService ..|> UserServiceContract : implements
+JwtService ..|> JwtServiceContract : implements
+
+UserService --> UserRepository : uses
+UserService --> JwtServiceContract : uses
+UserService --> UserEventProducer : uses
+
+UserService --> "ServiceResult<UserRegistrationResponse>" : returns
+UserService --> "ServiceResult<AuthResponse>" : returns
+
+UserEventProducer --> UserEvent : publishes
+UserEvent --> EventType : has
+
+EndpointMetricsAspect --> AuthController : intercepts
+
+User --> UserRole : has
+RefreshToken --> User : belongs to
 
 @enduml
