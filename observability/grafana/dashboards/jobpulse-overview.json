@@ -16,7 +16,44 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "links": [],
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Auth Service Dashboard",
+      "tooltip": "Detailed auth service metrics",
+      "type": "link",
+      "url": "/d/auth-service-dashboard"
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Job Service Dashboard",
+      "tooltip": "Detailed job service metrics",
+      "type": "link",
+      "url": "/d/job-service-dashboard"
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Infrastructure Dashboard",
+      "tooltip": "System and infrastructure metrics",
+      "type": "link",
+      "url": "/d/infrastructure-dashboard"
+    }
+  ],
   "panels": [
     {
       "datasource": "Prometheus",

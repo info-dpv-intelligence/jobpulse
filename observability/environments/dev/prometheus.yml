@@ -25,9 +25,11 @@ scrape_configs:
         replacement: 'auth-service-dev'
       - target_label: environment
         replacement: 'dev'
+      - target_label: service
+        replacement: 'auth-service'
     metric_relabel_configs:
       - source_labels: [__name__]
-        regex: '^(http_server_requests_seconds.*|jvm_.*|auth_.*|hikaricp_.*)$'
+        regex: '^(http_server_requests_seconds.*|jvm_.*|auth_.*|hikaricp_.*|process_.*)$'
         action: keep
 
   - job_name: 'job-service-dev'
@@ -41,9 +43,11 @@ scrape_configs:
         replacement: 'job-service-dev'
       - target_label: environment
         replacement: 'dev'
+      - target_label: service
+        replacement: 'job-service'
     metric_relabel_configs:
       - source_labels: [__name__]
-        regex: '^(http_server_requests_seconds.*|jvm_.*|job_.*|hikaricp_.*)$'
+        regex: '^(http_server_requests_seconds.*|jvm_.*|job_.*|hikaricp_.*|process_.*)$'
         action: keep
 
   # Development-specific exporters

@@ -52,7 +52,7 @@ BLUE := \033[0;34m
 CYAN := \033[0;36m
 NC := \033[0m
 
-.PHONY: help up down build logs restart clean health observability full-up full-down status urls api-docs test config
+.PHONY: help up down build logs logs-observability restart restart-observability clean health observability full-up full-down status urls api-docs test config
 
 # Default target
 help:
@@ -76,6 +76,7 @@ help:
 	@echo "  make api-docs       - Validate API documentation"
 	@echo "  make test           - Run observability validation tests"
 	@echo "  make config         - Show current compose file configuration"
+	@echo "  make logs-observability - Show observability service logs"
 	@echo ""
 	@echo "$(YELLOW)Environment Selection:$(NC)"
 	@echo "  make ENV=dev [command]   - Development environment (default)"
@@ -133,9 +134,19 @@ restart:
 	@echo "$(BLUE)🔄 Restarting $(ENV) services...$(NC)"
 	@docker-compose -f $(COMPOSE_BASE) -f $(COMPOSE_ENV) restart
 
+restart-observability:
+	@echo "$(BLUE)🔄 Restarting $(ENV) observability services...$(NC)"
+	@docker-compose -f $(COMPOSE_OBS) restart
+	@sleep 10
+	@echo "$(GREEN)✅ Observability services restarted$(NC)"
+
 logs:
 	@echo "$(BLUE)📋 Showing $(ENV) service logs...$(NC)"
 	@docker-compose -f $(COMPOSE_BASE) -f $(COMPOSE_ENV) logs -f
+
+logs-observability:
+	@echo "$(BLUE)📋 Showing $(ENV) observability logs...$(NC)"
+	@docker-compose -f $(COMPOSE_OBS) logs -f
 
 clean:
 	@echo "$(BLUE)🧹 Cleaning $(ENV) environment...$(NC)"
@@ -167,6 +178,10 @@ urls:
 	@echo ""
 	@echo "$(YELLOW)🔍 Observability:$(NC)"
 	@echo "  📊 Grafana:     http://$(BASE_URL):$(GRAFANA_PORT) (admin/$(GRAFANA_PASSWORD))"
+	@echo "      - Overview Dashboard: /d/jobpulse-overview"
+	@echo "      - Auth Service: /d/auth-service-dashboard"  
+	@echo "      - Job Service: /d/job-service-dashboard"
+	@echo "      - Infrastructure: /d/infrastructure-dashboard"
 	@echo "  📈 Prometheus:  http://$(BASE_URL):$(PROMETHEUS_PORT)"
 	@echo "  🔍 Jaeger:      http://$(BASE_URL):$(JAEGER_PORT)"
 	@echo ""
