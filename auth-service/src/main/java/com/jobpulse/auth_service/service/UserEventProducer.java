@@ -2,7 +2,7 @@ package com.jobpulse.auth_service.service;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import com.jobpulse.common_events.model.UserEvent;
+import com.jobpulse.auth_service.events.UserEvent;
 
 @Service
 public class UserEventProducer {

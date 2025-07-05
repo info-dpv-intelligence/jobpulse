@@ -36,11 +36,12 @@ dependencies {
 	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
 	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 	implementation 'io.github.openfeign:feign-micrometer:13.5'
+	implementation 'org.springframework:spring-aop'
+	implementation 'org.aspectj:aspectjweaver'
 	
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	implementation 'org.springframework.kafka:spring-kafka'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
-	implementation project(':common-events')
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 	implementation 'org.flywaydb:flyway-core:11.10.0'

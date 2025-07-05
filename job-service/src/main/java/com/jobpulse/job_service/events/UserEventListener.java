@@ -1,6 +1,6 @@
 package com.jobpulse.job_service.events;
 
-import com.jobpulse.common_events.model.UserEvent;
+import com.jobpulse.job_service.events.UserEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

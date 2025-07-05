@@ -10,7 +10,7 @@ import com.jobpulse.auth_service.dto.UserRegistrationResponse;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
 
-import com.jobpulse.common_events.model.UserEvent;
+import com.jobpulse.auth_service.events.UserEvent;
 
 import com.jobpulse.auth_service.model.RefreshToken;
 
