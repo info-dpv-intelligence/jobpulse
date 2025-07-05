@@ -35,7 +35,7 @@ dependencies {
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
 	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
-	implementation 'io.github.openfeign:feign-micrometer'
+	implementation 'io.github.openfeign:feign-micrometer:13.5'
 	
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	implementation 'org.springframework.kafka:spring-kafka'
