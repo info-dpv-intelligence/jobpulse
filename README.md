@@ -25,6 +25,16 @@ A microservices-based job posting and application management system built with J
 - Full observability stack (Prometheus, Grafana, Jaeger)
 - Comprehensive metrics collection with custom business metrics
 
+## 📐 Architecture Documentation
+
+Detailed architecture diagrams and design documents are available in the `docs/` folder:
+
+**Service-Specific Architecture:**
+- [Auth Service Architecture](docs/auth-service/auth-service.puml) - Service structure and components
+- [Registration & Login Flow](docs/auth-service/registration-login.puml) - Authentication workflow diagrams
+- [Job Service Design](docs/job-service/design.puml) - Job management service architecture
+
+
 ## ✅ Implemented Features
 
 **Core Functionality:**
