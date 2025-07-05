@@ -1,119 +1,116 @@
-# JobPulse – Job Posting & Application Management Backend
+# JobPulse – Job Management Backend
 
-JobPulse is a modular backend system built with Java and Spring Boot, designed as a demonstration of core backend skills for job posting and application management. It showcases modern backend architecture patterns and Java ecosystem usage.
+A microservices-based job posting and application management system built with Java 17 and Spring Boot 3. Demonstrates modern backend architecture, event-driven design, and enterprise observability patterns.
 
----
+## 🚀 Tech Stack
 
-## Tech Stack
+**Backend:** Java 17, Spring Boot 3, Spring Security (JWT)  
+**Messaging:** Apache Kafka  
+**Database:** PostgreSQL  
+**Observability:** Micrometer, Prometheus, Grafana, Jaeger  
+**Infrastructure:** Docker, Docker Compose  
+**Testing:** JUnit 5  
 
-- Java 17
-- Spring Boot 3
-- Spring Security (JWT-based authentication)
-- Kafka (event-driven communication)
-- PostgreSQL (persistence)
-- Docker, Docker Compose
-- JUnit (testing)
+## 🏗️ Architecture
 
----
+**Microservices:**
+- `auth-service` (8080) - JWT authentication & user management
+- `job-service` (8081) - Job posting CRUD with pagination
+- `application-service` (8082) - Application management *(API in progress)*
+- `alert-worker` (8083) - Event processing *(implementation pending)*
 
-## Architecture Overview
+**Infrastructure:**
+- PostgreSQL databases per service
+- Kafka for async event communication
+- Full observability stack (Prometheus, Grafana, Jaeger)
+- Comprehensive metrics collection with custom business metrics
 
-JobPulse is structured as a set of microservices:
+## ✅ Implemented Features
 
-- **auth-service:** Manages user registration, login, JWT issuance, and refresh token management.
-- **job-service:** Handles job post creation and listing (with basic pagination). OpenAPI spec available (see below).
-- **application-service:** Intended to handle application management via events (early stage; API not yet exposed).
-- **alert-worker:** Placeholder for consuming job/application events (logic not yet implemented).
+**Core Functionality:**
+- User registration/login with JWT tokens
+- Job posting creation and listing with pagination
+- Role-based access control
 
-All services are containerized and orchestrated with Docker Compose.
+**Event-Driven Architecture:**
+- Kafka integration for service communication
+- Event publishing for job lifecycle
 
----
+**Observability & Monitoring:**
+- Prometheus metrics collection with custom business metrics
+- Grafana dashboards for visualization
+- Jaeger distributed tracing
+- Health checks (`/actuator/health`) 
+- Real-time monitoring scripts
+- Custom endpoint metrics with AOP
 
-## Key Features
+**API Documentation:**
+- OpenAPI/Swagger for job-service
+- Comprehensive endpoint documentation
 
-### User Registration & Authentication
+## 🔧 Quick Start
 
-- Register and log in users, with secure password hashing.
-- Issue JWT access and refresh tokens.
-- Role-based access control (roles modeled, limited enforcement).
+```bash
+# Start all services
+make ENV=dev up
 
-### Job Post Management
+# Start observability stack
+./start-observability.sh
 
-- Create, list, and paginate job postings.
-- OpenAPI spec for job-service available (see below).
-- **Note:** CRUD (update, delete) and advanced filtering/search are not yet implemented.
+# Health check
+curl http://localhost:8081/actuator/health
+```
 
-### Event-driven Design (Early Stage)
+## 📋 API Endpoints
 
-- Kafka integration scaffolded for events (job creation, application lifecycle).
-- Basic event publishing implemented.
-- Alerting/notification worker is a stub (no real event processing yet).
+**Auth Service (8080):**
+```
+POST /api/auth/register  # User registration
+POST /api/auth/login     # Login with JWT response
+GET  /actuator/prometheus # Prometheus metrics
+```
 
-### Health Checks
+**Job Service (8081):**
+```
+GET  /api/v1/jobs        # List jobs (paginated)
+POST /api/v1/jobs        # Create job posting
+GET  /actuator/prometheus # Prometheus metrics
+```
 
-- `/ping` and `/actuator/health` endpoints for all services.
+**API Documentation:** [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 
----
+## 📊 Monitoring & Observability
 
-## What’s Not Yet Implemented
+**Metrics Collection:**
+- Business metrics: Registration/login attempts, job searches, creation rates
+- Technical metrics: Response times, error rates, JVM performance
+- Database metrics: Connection pool usage, query performance
 
-- No production-grade error handling or input validation (basic error handling only).
-- Application management (applying to jobs, tracking application state) is not complete; no public API yet.
-- Alerting/notification worker is a placeholder.
-- No frontend or admin dashboard.
-- Minimal API documentation and test coverage (work in progress).
+**Monitoring Stack:**
+- **Prometheus:** [http://localhost:9090](http://localhost:9090) - Metrics collection
+- **Grafana:** [http://localhost:3000](http://localhost:3000) - Dashboards (admin/jobpulse123)
+- **Jaeger:** [http://localhost:16686](http://localhost:16686) - Distributed tracing
 
----
+**Real-time Monitoring:**
+```bash
+# Live metrics dashboard
+./scripts/monitor.sh
 
-## Quick Start
+# Validate observability setup
+./scripts/validate-observability.sh
 
-1. **Clone the repository.**
-2. Ensure Docker, Docker Compose, and `make` are installed.
-3. Start the services with:
-   ```sh
-   make ENV=dev up
-   ```
-4. Access API endpoints (see below).
+# Generate load for testing
+./scripts/load-test.sh
+```
 
----
+## 🚧 To Be Implemented
 
-## Example API Endpoints
+- [ ] Job update/delete operations
+- [ ] Advanced job search and filtering
+- [ ] Application submission API (application-service)
+- [ ] Application state tracking and file uploads
+- [ ] Alert worker event processing
+- [ ] Enhanced input validation and error handling
+- [ ] Comprehensive integration test suite
 
-### Auth Service
-
-- `POST /auth/register` – Register a new user.
-- `POST /auth/login` – Log in and receive JWT.
-
-### Job Service
-
-- `GET /v1/jobs` – List all jobs (paged).
-- `POST /v1/jobs` – Create a new job.
-
-### OpenAPI Documentation
-
-- **Job Service OpenAPI Spec:**  
-  Once job-service is running, visit:  
-  [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)  
-  or  
-  [http://localhost:8081/v3/api-docs](http://localhost:8081/v3/api-docs)
-
----
-
-## Intended Use
-
-This repository was created as a demonstration project to showcase Java and Spring Boot backend skills and ecosystem usage. It is not intended for production use, but as a reference for code quality, service design, and rapid prototyping.
-
----
-
-## Planned Features
-
-- Full CRUD support for job postings (update, delete)
-- Advanced filtering and search for job listings
-- Public API for job application submission and state tracking
-- Application file upload/download endpoints
-- Alert/notification worker for event-driven notifications
-- Improved error handling and input validation
-- Expanded test coverage (unit and integration)
-- API documentation via Swagger/OpenAPI UI for all services
-
----
+*Note: This is a demonstration project.*
