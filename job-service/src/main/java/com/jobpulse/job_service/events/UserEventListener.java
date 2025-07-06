@@ -1,16 +1,23 @@
 package com.jobpulse.job_service.events;
 
-import com.jobpulse.job_service.events.UserEvent;
+import com.jobpulse.job_service.logging.LoggingConfig;
+import com.jobpulse.job_service.logging.LoggingConstants;
+import com.jobpulse.job_service.logging.StructuredLogger;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class UserEventListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserEventListener.class);
+    private final StructuredLogger logger;
+
+    public UserEventListener(LoggingConfig.LoggerFactory loggerFactory) {
+        this.logger = loggerFactory.getLogger(UserEventListener.class);
+    }
 
     @KafkaListener(
         topics = "${user.events.topic:user.events}",
@@ -18,7 +25,16 @@ public class UserEventListener {
     )
     public void handleUserEvent(UserEvent event, ConsumerRecord<String, UserEvent> record) {
         try {
-            logger.info("Received user event: {} for user: {}", event.getEventType(), event.getUserId());
+            Map<String, Object> context = new HashMap<>();
+            context.put(LoggingConstants.USER_ID, event.getUserId());
+            logger.logKafkaMessage(
+                LoggingConstants.EVENT_KAFKA_MESSAGE_RECEIVED,
+                "Received user event: " + event.getEventType() + " for user: " + event.getUserId(),
+                record.topic(),
+                record.partition(),
+                record.offset(),
+                context
+            );
             
             switch (event.getEventType()) {
                 case REGISTERED:
@@ -31,25 +47,54 @@ public class UserEventListener {
                     handleUserDeleted(event);
                     break;
                 default:
-                    logger.warn("Unknown user event type: {}", event.getEventType());
+                    context.put("unknownEventType", event.getEventType());
+                    logger.warn(LoggingConstants.EVENT_ERROR, "Unknown user event type: " + event.getEventType(), context);
             }
 
         } catch (Exception ex) {
-            logger.error("Error processing user event at offset {}: {}", record.offset(), ex.getMessage(), ex);
+            Map<String, Object> errorContext = new HashMap<>();
+            errorContext.put(LoggingConstants.KAFKA_OFFSET, record.offset());
+            logger.error(
+                LoggingConstants.EVENT_ERROR,
+                LoggingConstants.ERROR_KAFKA,
+                "Error processing user event at offset " + record.offset() + ": " + ex.getMessage(),
+                ex,
+                errorContext
+            );
         }
     }
     
     private void handleUserRegistered(UserEvent event) {
-        logger.info("Processing user registration: userId={}, email={}, role={}", 
-                   event.getUserId(), event.getEmail(), event.getRole());
+        Map<String, Object> context = new HashMap<>();
+        context.put(LoggingConstants.USER_ID, event.getUserId());
+        context.put("email", event.getEmail());
+        context.put("role", event.getRole());
+        logger.info(
+            LoggingConstants.EVENT_USER_REGISTERED,
+            "Processing user registration: userId=" + event.getUserId() + ", email=" + event.getEmail() + ", role=" + event.getRole(),
+            context
+        );
     }
     
     private void handleUserUpdated(UserEvent event) {
-        logger.info("Processing user update: userId={}, email={}, role={}", 
-                   event.getUserId(), event.getEmail(), event.getRole());
+        Map<String, Object> context = new HashMap<>();
+        context.put(LoggingConstants.USER_ID, event.getUserId());
+        context.put("email", event.getEmail());
+        context.put("role", event.getRole());
+        logger.info(
+            LoggingConstants.EVENT_USER_UPDATED,
+            "Processing user update: userId=" + event.getUserId() + ", email=" + event.getEmail() + ", role=" + event.getRole(),
+            context
+        );
     }
     
     private void handleUserDeleted(UserEvent event) {
-        logger.info("Processing user deletion: userId={}", event.getUserId());
+        Map<String, Object> context = new HashMap<>();
+        context.put(LoggingConstants.USER_ID, event.getUserId());
+        logger.info(
+            LoggingConstants.EVENT_USER_DELETED,
+            "Processing user deletion: userId=" + event.getUserId(),
+            context
+        );
     }
 }

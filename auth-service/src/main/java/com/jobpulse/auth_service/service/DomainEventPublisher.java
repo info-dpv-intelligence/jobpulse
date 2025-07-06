@@ -3,19 +3,27 @@ package com.jobpulse.auth_service.service;
 import com.jobpulse.auth_service.domain.DomainEvent;
 import com.jobpulse.auth_service.domain.UserRegisteredEvent;
 import com.jobpulse.auth_service.events.UserEvent;
+import com.jobpulse.auth_service.logging.LoggingConfig;
+import com.jobpulse.auth_service.logging.LoggingConstants;
+import com.jobpulse.auth_service.logging.StructuredLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class DomainEventPublisher {
     
-    private static final Logger logger = LoggerFactory.getLogger(DomainEventPublisher.class);
+    private final StructuredLogger logger;
     
     @Autowired
     private UserEventProducer userEventProducer;
+
+    public DomainEventPublisher(LoggingConfig.LoggerFactory loggerFactory) {
+        this.logger = loggerFactory.getLogger(DomainEventPublisher.class);
+    }
 
     public void publish(DomainEvent domainEvent) {
         try {
@@ -24,10 +32,24 @@ public class DomainEventPublisher {
                     publishUserRegisteredEvent((UserRegisteredEvent) domainEvent);
                     break;
                 default:
-                    logger.warn("Unknown domain event type: {}", domainEvent.getEventType());
+                    Map<String, Object> context = new HashMap<>();
+                    context.put("unknownEventType", domainEvent.getEventType());
+                    logger.warn(
+                        LoggingConstants.EVENT_ERROR,
+                        "Unknown domain event type: " + domainEvent.getEventType(),
+                        context
+                    );
             }
         } catch (Exception e) {
-            logger.error("Failed to publish domain event: {}", domainEvent.getEventType(), e);
+            Map<String, Object> errorContext = new HashMap<>();
+            errorContext.put("eventType", domainEvent.getEventType());
+            logger.error(
+                LoggingConstants.EVENT_ERROR,
+                LoggingConstants.ERROR_SYSTEM,
+                "Failed to publish domain event: " + domainEvent.getEventType(),
+                e,
+                errorContext
+            );
         }
     }
     
@@ -44,6 +66,15 @@ public class DomainEventPublisher {
         );
         
         userEventProducer.sendUserEvent(integrationEvent);
-        logger.info("Published UserRegistered event for user: {}", domainEvent.getUserId());
+        
+        Map<String, Object> context = new HashMap<>();
+        context.put(LoggingConstants.USER_ID, domainEvent.getUserId());
+        context.put("email", domainEvent.getEmail());
+        context.put("role", domainEvent.getRole());
+        logger.info(
+            LoggingConstants.EVENT_DOMAIN_EVENT_PUBLISHED,
+            "Published UserRegistered event for user: " + domainEvent.getUserId(),
+            context
+        );
     }
 }
