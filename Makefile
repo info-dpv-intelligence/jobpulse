@@ -52,7 +52,7 @@ BLUE := \033[0;34m
 CYAN := \033[0;36m
 NC := \033[0m
 
-.PHONY: help up down build logs logs-observability restart restart-observability clean health observability full-up full-down status urls api-docs test config
+.PHONY: help up down build logs logs-observability restart restart-observability clean clean-build clean-all health observability full-up full-down status urls api-docs test config
 
 # Default target
 help:
@@ -70,6 +70,8 @@ help:
 	@echo "  make restart        - Restart services"
 	@echo "  make logs           - Show service logs"
 	@echo "  make clean          - Clean up containers and volumes"
+	@echo "  make clean-build    - Clean Gradle build artifacts and caches"
+	@echo "  make clean-all      - Clean everything (Docker + Gradle)"
 	@echo "  make health         - Check service health"
 	@echo "  make status         - Show environment status"
 	@echo "  make urls           - Show important URLs"
@@ -149,10 +151,27 @@ logs-observability:
 	@docker-compose -f $(COMPOSE_OBS) logs -f
 
 clean:
-	@echo "$(BLUE)🧹 Cleaning $(ENV) environment...$(NC)"
+	@echo "$(BLUE)🧹 Cleaning $(ENV) Docker environment...$(NC)"
 	@docker-compose -f $(COMPOSE_BASE) -f $(COMPOSE_ENV) down -v --remove-orphans
 	@docker-compose -f $(COMPOSE_OBS) down -v --remove-orphans 2>/dev/null || true
-	@echo "$(GREEN)✅ Environment cleaned$(NC)"
+	@echo "$(GREEN)✅ Docker environment cleaned$(NC)"
+
+clean-build:
+	@echo "$(BLUE)🧹 Cleaning Gradle build artifacts and caches...$(NC)"
+	@echo "$(YELLOW)🗂️  Removing root build directories...$(NC)"
+	@rm -rf build/ .gradle/
+	@echo "$(YELLOW)🗂️  Removing auth-service build directories...$(NC)"
+	@rm -rf auth-service/build/ auth-service/.gradle/
+	@echo "$(YELLOW)🗂️  Removing job-service build directories...$(NC)"
+	@rm -rf job-service/build/ job-service/.gradle/
+	@echo "$(YELLOW)🗂️  Removing common-events build directories...$(NC)"
+	@rm -rf common-events/build/ common-events/.gradle/
+	@echo "$(YELLOW)🧽 Running gradle clean on all projects...$(NC)"
+	@./gradlew clean --quiet 2>/dev/null || echo "$(YELLOW)⚠️  Gradle clean skipped (gradlew not executable or failed)$(NC)"
+	@echo "$(GREEN)✅ All Gradle build artifacts cleaned$(NC)"
+
+clean-all: clean clean-build
+	@echo "$(GREEN)🎉 Complete cleanup finished - Docker + Gradle$(NC)"
 
 # Status and health checks
 status:
