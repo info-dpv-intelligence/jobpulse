@@ -244,13 +244,3 @@ config:
 	@echo "  Jaeger:        $(JAEGER_PORT)"
 	@echo "  Auth Service:  $(AUTH_PORT)"
 	@echo "  Job Service:   $(JOB_PORT)"
-
-# Legacy targets for backward compatibility
-dev-full: ENV=dev
-dev-full: full-up
-
-test-full: ENV=test
-test-full: full-up
-
-prod-deploy: ENV=prod
-prod-deploy: full-up
