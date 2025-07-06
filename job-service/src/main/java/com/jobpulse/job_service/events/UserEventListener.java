@@ -18,12 +18,38 @@ public class UserEventListener {
     )
     public void handleUserEvent(UserEvent event, ConsumerRecord<String, UserEvent> record) {
         try {
-            logger.info("Received user event: {}", event);
-            // Your business logic here
+            logger.info("Received user event: {} for user: {}", event.getEventType(), event.getUserId());
+            
+            switch (event.getEventType()) {
+                case REGISTERED:
+                    handleUserRegistered(event);
+                    break;
+                case UPDATED:
+                    handleUserUpdated(event);
+                    break;
+                case DELETED:
+                    handleUserDeleted(event);
+                    break;
+                default:
+                    logger.warn("Unknown user event type: {}", event.getEventType());
+            }
 
         } catch (Exception ex) {
             logger.error("Error processing user event at offset {}: {}", record.offset(), ex.getMessage(), ex);
-            // Optionally: send to a dead-letter topic or alert
         }
+    }
+    
+    private void handleUserRegistered(UserEvent event) {
+        logger.info("Processing user registration: userId={}, email={}, role={}", 
+                   event.getUserId(), event.getEmail(), event.getRole());
+    }
+    
+    private void handleUserUpdated(UserEvent event) {
+        logger.info("Processing user update: userId={}, email={}, role={}", 
+                   event.getUserId(), event.getEmail(), event.getRole());
+    }
+    
+    private void handleUserDeleted(UserEvent event) {
+        logger.info("Processing user deletion: userId={}", event.getUserId());
     }
 }

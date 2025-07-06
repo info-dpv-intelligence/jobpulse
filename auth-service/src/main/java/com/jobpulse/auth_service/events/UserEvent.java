@@ -11,16 +11,23 @@ public class UserEvent {
     private EventType eventType;
     private String userId;
     private String email;
+    private String role;
 
     public enum EventType {
-        CREATED, UPDATED
+        REGISTERED,
+        UPDATED,
+        DELETED
     }
 
-    public static UserEvent created(String userId, String email) {
-        return new UserEvent(EventType.CREATED, userId, email);
+    public static UserEvent registered(String userId, String email, String role) {
+        return new UserEvent(EventType.REGISTERED, userId, email, role);
     }
 
-    public static UserEvent updated(String userId, String email) {
-        return new UserEvent(EventType.UPDATED, userId, email);
+    public static UserEvent updated(String userId, String email, String role) {
+        return new UserEvent(EventType.UPDATED, userId, email, role);
+    }
+    
+    public static UserEvent deleted(String userId, String email, String role) {
+        return new UserEvent(EventType.DELETED, userId, email, role);
     }
 }

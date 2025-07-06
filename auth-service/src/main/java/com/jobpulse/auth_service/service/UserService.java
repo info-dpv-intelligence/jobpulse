@@ -9,14 +9,15 @@ import com.jobpulse.auth_service.dto.ServiceResult;
 import com.jobpulse.auth_service.dto.UserRegistrationResponse;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
-
-import com.jobpulse.auth_service.events.UserEvent;
-
 import com.jobpulse.auth_service.model.RefreshToken;
+import com.jobpulse.auth_service.domain.PublishDomainEvents;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 public class UserService implements UserServiceContract {
@@ -27,34 +28,28 @@ public class UserService implements UserServiceContract {
     @Autowired
     private JwtServiceContract jwtService;
 
-    @Autowired
-    private UserEventProducer userEventProducer;
-
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
+    @Transactional
+    @PublishDomainEvents(async = true)
     public ServiceResult<UserRegistrationResponse> registerUser(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             return ServiceResult.failure("Email already in use", "EMAIL_EXISTS");
         }
         
         try {
-            User user = new User();
-            user.setEmail(request.getEmail());
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setRole(request.getRole());
-            userRepository.save(user);
-            
-            UserEvent event = UserEvent.created(
-                user.getId().toString(), 
-                user.getEmail()
-            );
-            userEventProducer.sendUserEvent(event);
+            User user = User.register(request.getEmail(), 
+                                    passwordEncoder.encode(request.getPassword()), 
+                                    request.getRole());
+            user = userRepository.save(user);
+            user.confirmRegistration();
 
             UserRegistrationResponse response = UserRegistrationResponse.success(user.getId().toString());
+            // Domain events will be published asynchronously by the aspect
+            
             return ServiceResult.success(response);
         } catch (Exception e) {
-            // @todo add logging
             return ServiceResult.failure("Registration failed: " + e.getMessage(), "REGISTRATION_ERROR");
         }
     }
@@ -67,7 +62,6 @@ public class UserService implements UserServiceContract {
         }
         
         try {
-            // Create command objects for JWT operations
             GenerateTokenRequest tokenRequest = new GenerateTokenRequest(user.getId(), user.getRole(), user.getEmail());
             RefreshTokenRequest refreshRequest = new RefreshTokenRequest(user.getId());
             
@@ -78,8 +72,41 @@ public class UserService implements UserServiceContract {
 
             return ServiceResult.success(authResponse);
         } catch (Exception e) {
-            // @todo add logging
             return ServiceResult.failure("Authentication failed: " + e.getMessage(), "AUTH_ERROR");
+        }
+    }
+    
+    @Transactional
+    @PublishDomainEvents
+    public ServiceResult<Void> updateUserProfile(String userId, String newEmail) {
+        try {
+            User user = userRepository.findById(UUID.fromString(userId)).orElse(null);
+            if (user == null) {
+                return ServiceResult.failure("User not found", "USER_NOT_FOUND");
+            }
+            
+            user = userRepository.save(user);
+            
+            return ServiceResult.success(null);
+        } catch (Exception e) {
+            return ServiceResult.failure("Update failed: " + e.getMessage(), "UPDATE_ERROR");
+        }
+    }
+    
+    @Transactional
+    @PublishDomainEvents
+    public ServiceResult<Void> complexBusinessOperation(String userId) {
+        try {
+            User user = userRepository.findById(UUID.fromString(userId)).orElse(null);
+            if (user == null) {
+                return ServiceResult.failure("User not found", "USER_NOT_FOUND");
+            }
+            
+            user = userRepository.save(user);
+            
+            return ServiceResult.success(null);
+        } catch (Exception e) {
+            return ServiceResult.failure("Operation failed: " + e.getMessage(), "OPERATION_ERROR");
         }
     }
 }
