@@ -52,6 +52,7 @@ package "Repositories" {
 }
 
 package "Domain" {
+    ' TODO: Add job post versioning to support tracking changes over time.
     class JobPost {
         +id: UUID
         +title: String
