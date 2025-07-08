@@ -17,7 +17,6 @@ import java.util.List;
 import java.time.Instant;
 import javax.crypto.SecretKey;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import io.jsonwebtoken.JwtException;
 import java.nio.charset.StandardCharsets;
 

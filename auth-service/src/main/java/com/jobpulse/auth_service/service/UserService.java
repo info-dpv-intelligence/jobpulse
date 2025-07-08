@@ -46,7 +46,6 @@ public class UserService implements UserServiceContract {
             user.confirmRegistration();
 
             UserRegistrationResponse response = UserRegistrationResponse.success(user.getId().toString());
-            // Domain events will be published asynchronously by the aspect
             
             return ServiceResult.success(response);
         } catch (Exception e) {
