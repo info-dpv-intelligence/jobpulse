@@ -23,12 +23,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/v1/auth")
 @Tag(name = "Authentication", description = "User registration and login operations")
 public class AuthController {
 
-    @Autowired
     private UserServiceContract userService;
+
+    @Autowired
+    public AuthController(UserServiceContract userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/register")
     @Operation(
