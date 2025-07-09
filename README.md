@@ -1,6 +1,6 @@
 # JobPulse – Job Management Backend
 
-A microservices-based job posting and application management system built with Java 17 and Spring Boot 3. Demonstrates modern backend architecture, event-driven design, and enterprise observability patterns.
+A microservices-based job posting and application management system built with Java 17 and Spring Boot 3. Demonstrates modern backend architecture, event-driven design, and observability patterns.
 
 ## 🚀 Tech Stack
 
