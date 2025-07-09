@@ -62,6 +62,12 @@ package "Domain" {
         +updatedAt: LocalDateTime
         +isActive: Boolean
     }
+    class JobPostContent {
+        
+    }
+    class JobPostVersion {
+        +id: UUID
+    }
     
     class JobApplication {
         +id: UUID
