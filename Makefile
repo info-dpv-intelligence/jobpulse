@@ -116,9 +116,11 @@ observability-down:
 	@echo "$(GREEN)✅ Observability stack stopped$(NC)"
 
 # Combined operations
-full-up: observability
-	@sleep 10
+full-up:
+	@echo "$(BLUE)🚀 Starting complete $(ENV) environment...$(NC)"
 	@make up ENV=$(ENV)
+	@sleep 5
+	@make observability ENV=$(ENV)
 	@echo "$(GREEN)🎉 Complete $(ENV) environment is ready!$(NC)"
 	@make urls ENV=$(ENV)
 
