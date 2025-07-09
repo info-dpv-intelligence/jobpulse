@@ -50,6 +50,9 @@ public class SecurityConfig {
                     "/ping/", 
                     "/actuator/health",
                     "/actuator/**",
+                    // Job service endpoints
+                    "/v1/jobs/",
+                    "/v1/jobs",
                     // OpenAPI/Swagger UI endpoints
                     "/v3/api-docs/**",
                     "/v3/api-docs.json",

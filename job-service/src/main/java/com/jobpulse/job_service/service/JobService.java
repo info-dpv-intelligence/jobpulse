@@ -12,20 +12,21 @@ import com.jobpulse.job_service.dto.UpdateJobPostCommand;
 import com.jobpulse.job_service.dto.JobListingsResponse;
 import com.jobpulse.job_service.dto.JobPostUpdatedResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-@Service
+/**
+ * Job service implementation.
+ * Handles job posting operations including CRUD operations.
+ * This service is created via factory pattern rather than Spring annotation.
+ */
 public class JobService implements JobServiceContract {
 
     private final JobPostRepository jobPostRepository;
 
-    @Autowired
     public JobService(JobPostRepository jobPostRepository) {
         this.jobPostRepository = jobPostRepository;
     }

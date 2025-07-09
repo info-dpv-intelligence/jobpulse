@@ -1,6 +1,7 @@
 package com.jobpulse.job_service.controller;
 
 import com.jobpulse.job_service.service.JobServiceContract;
+import com.jobpulse.job_service.factory.JobServiceFactory;
 import com.jobpulse.job_service.dto.CreateJobPostCommand;
 import com.jobpulse.job_service.dto.CreateJobPostRequest;
 import com.jobpulse.job_service.dto.UserContext;
@@ -43,8 +44,8 @@ public class JobServiceController {
     private final JobServiceContract jobService;
 
     @Autowired
-    public JobServiceController(JobServiceContract jobService) {
-        this.jobService = jobService;
+    public JobServiceController(JobServiceFactory jobServiceFactory) {
+        this.jobService = jobServiceFactory.createJobService();
     }
 
     @GetMapping("/jobs")

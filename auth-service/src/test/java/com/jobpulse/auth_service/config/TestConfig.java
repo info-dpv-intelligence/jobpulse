@@ -8,6 +8,11 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.jobpulse.auth_service.factory.ServiceFactory;
+import com.jobpulse.auth_service.service.module.password.PasswordServiceContract;
+import com.jobpulse.auth_service.service.module.password.BCryptPasswordService;
+import com.jobpulse.auth_service.service.module.jwt.JwtServiceContract;
+
 import static org.mockito.Mockito.mock;
 
 /**
@@ -20,6 +25,7 @@ public class TestConfig {
 
     @Bean
     @Primary
+    @SuppressWarnings("unchecked")
     public KafkaTemplate<String, Object> mockKafkaTemplate() {
         return mock(KafkaTemplate.class);
     }
@@ -28,5 +34,21 @@ public class TestConfig {
     @Primary
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @Primary
+    public ServiceFactory testServiceFactory() {
+        return new ServiceFactory() {
+            @Override
+            public PasswordServiceContract createPasswordService() {
+                return new BCryptPasswordService();
+            }
+
+            @Override
+            public JwtServiceContract createJwtService() {
+                return mock(JwtServiceContract.class);
+            }
+        };
     }
 }

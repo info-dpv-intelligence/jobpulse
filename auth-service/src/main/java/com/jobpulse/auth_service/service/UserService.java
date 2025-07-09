@@ -10,31 +10,29 @@ import com.jobpulse.auth_service.dto.UserRegistrationResponse;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
 import com.jobpulse.auth_service.service.module.jwt.JwtServiceContract;
-import com.jobpulse.auth_service.service.module.jwt.factory.JwtServiceFactory;
+import com.jobpulse.auth_service.service.module.password.PasswordServiceContract;
+import com.jobpulse.auth_service.factory.ServiceFactory;
 import com.jobpulse.auth_service.model.RefreshToken;
 import com.jobpulse.auth_service.domain.PublishDomainEvents;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService implements UserServiceContract {
-    private UserRepository userRepository;
-
-    private JwtServiceContract jwtService;
-
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final JwtServiceContract jwtService;
+    private final PasswordServiceContract passwordService;
 
     @Autowired
     public UserService(
         UserRepository userRepository,
-        JwtServiceFactory jwtServiceFactory
+        ServiceFactory serviceFactory
     ) {
         this.userRepository = userRepository;
-        this.jwtService = jwtServiceFactory.createJwtService();
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.jwtService = serviceFactory.createJwtService();
+        this.passwordService = serviceFactory.createPasswordService();
     }
 
     @Override
@@ -47,7 +45,7 @@ public class UserService implements UserServiceContract {
         
         try {
             User user = User.register(request.getEmail(), 
-                                    passwordEncoder.encode(request.getPassword()), 
+                                    passwordService.encode(request.getPassword()), 
                                     request.getRole());
             user = userRepository.save(user);
             user.confirmRegistration();
@@ -63,7 +61,7 @@ public class UserService implements UserServiceContract {
     @Override
     public ServiceResult<AuthResponse> login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail());
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (user == null || !passwordService.matches(request.getPassword(), user.getPassword())) {
             return ServiceResult.failure("Invalid credentials", "INVALID_CREDENTIALS");
         }
         

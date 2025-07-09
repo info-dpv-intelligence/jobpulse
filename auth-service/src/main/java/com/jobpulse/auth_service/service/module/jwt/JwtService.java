@@ -7,11 +7,8 @@ import com.jobpulse.auth_service.model.RefreshToken;
 import com.jobpulse.auth_service.repository.RefreshTokenRepository;
 import com.jobpulse.auth_service.repository.UserRepository;
 import com.jobpulse.auth_service.service.module.jwt.dto.JwtConfig;
-import com.jobpulse.auth_service.service.module.jwt.factory.JwtServiceFactory;
 
 import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -23,15 +20,18 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.JwtException;
 import java.nio.charset.StandardCharsets;
 
-
-@Service
+/**
+ * JWT service implementation.
+ * Handles JWT token generation, validation, and refresh token management.
+ * This service is created via factory pattern rather than Spring annotation.
+ */
 public class JwtService implements JwtServiceContract {
     private JwtConfig jwtConfig;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(this.jwtConfig.jwtSecret().(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(this.jwtConfig.jwtSecret().getBytes(StandardCharsets.UTF_8));
     }
 
     public JwtService(
