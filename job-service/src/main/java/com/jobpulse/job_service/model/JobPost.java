@@ -34,4 +34,21 @@ public class JobPost {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
+
+    public static JobPost create(
+        String title,
+        String description,
+        UUID jobPosterId,
+        Boolean isActive
+    ) {
+        JobPost jobPost = new JobPost();
+        jobPost.setTitle(title);
+        jobPost.setDescription(description);
+        jobPost.setJobPosterId(jobPosterId);
+        jobPost.setCreatedAt(LocalDateTime.now());
+        jobPost.setUpdatedAt(LocalDateTime.now());
+        jobPost.setActive(isActive);
+
+        return jobPost;
+    }
 }
