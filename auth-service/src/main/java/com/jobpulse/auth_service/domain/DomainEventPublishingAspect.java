@@ -1,6 +1,5 @@
 package com.jobpulse.auth_service.domain;
 
-import com.jobpulse.auth_service.service.DomainEventPublisher;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -9,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+
+import com.jobpulse.auth_service.service.module.event.publish.DomainEventPublisher;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

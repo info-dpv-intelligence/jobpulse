@@ -1,4 +1,4 @@
-package com.jobpulse.auth_service.service;
+package com.jobpulse.auth_service.service.module.jwt;
 
 import com.jobpulse.auth_service.dto.GenerateTokenRequest;
 import com.jobpulse.auth_service.dto.RefreshTokenRequest;

@@ -5,6 +5,9 @@ import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.model.RefreshToken;
 import com.jobpulse.auth_service.model.UserRole;
 import com.jobpulse.auth_service.repository.UserRepository;
+import com.jobpulse.auth_service.service.module.event.publish.UserEventProducer;
+import com.jobpulse.auth_service.service.module.jwt.JwtServiceContract;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,4 +1,4 @@
-package com.jobpulse.auth_service.service;
+package com.jobpulse.auth_service.service.module.event.publish;
 
 import com.jobpulse.auth_service.domain.AggregateRoot;
 import com.jobpulse.auth_service.domain.DomainEvent;
@@ -12,13 +12,19 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+// Extract the interface to a contract file and make this servie implement that
 public class DomainEventService {
     
-    private static final Logger logger = LoggerFactory.getLogger(DomainEventService.class);
-    
-    @Autowired
+    private Logger logger;
+
     private DomainEventPublisher domainEventPublisher;
     
+    public DomainEventService(DomainEventPublisher domainEventPublisher) {
+        this.domainEventPublisher = domainEventPublisher;
+        this.logger = LoggerFactory.getLogger(
+            DomainEventService.class
+        );
+    }
     public void publishEventsAndClear(AggregateRoot aggregate) {
         if (aggregate == null || !aggregate.hasEvents()) {
             return;

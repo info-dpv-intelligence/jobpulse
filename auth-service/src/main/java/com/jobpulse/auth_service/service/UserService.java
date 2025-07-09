@@ -9,6 +9,8 @@ import com.jobpulse.auth_service.dto.ServiceResult;
 import com.jobpulse.auth_service.dto.UserRegistrationResponse;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
+import com.jobpulse.auth_service.service.module.jwt.JwtServiceContract;
+import com.jobpulse.auth_service.service.module.jwt.factory.JwtServiceFactory;
 import com.jobpulse.auth_service.model.RefreshToken;
 import com.jobpulse.auth_service.domain.PublishDomainEvents;
 
@@ -17,18 +19,23 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Service
 public class UserService implements UserServiceContract {
-
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private JwtServiceContract jwtService;
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    public UserService(
+        UserRepository userRepository,
+        JwtServiceFactory jwtServiceFactory
+    ) {
+        this.userRepository = userRepository;
+        this.jwtService = jwtServiceFactory.createJwtService();
+        this.passwordEncoder = new BCryptPasswordEncoder();
+    }
 
     @Override
     @Transactional
@@ -72,40 +79,6 @@ public class UserService implements UserServiceContract {
             return ServiceResult.success(authResponse);
         } catch (Exception e) {
             return ServiceResult.failure("Authentication failed: " + e.getMessage(), "AUTH_ERROR");
-        }
-    }
-    
-    @Transactional
-    @PublishDomainEvents
-    public ServiceResult<Void> updateUserProfile(String userId, String newEmail) {
-        try {
-            User user = userRepository.findById(UUID.fromString(userId)).orElse(null);
-            if (user == null) {
-                return ServiceResult.failure("User not found", "USER_NOT_FOUND");
-            }
-            
-            user = userRepository.save(user);
-            
-            return ServiceResult.success(null);
-        } catch (Exception e) {
-            return ServiceResult.failure("Update failed: " + e.getMessage(), "UPDATE_ERROR");
-        }
-    }
-    
-    @Transactional
-    @PublishDomainEvents
-    public ServiceResult<Void> complexBusinessOperation(String userId) {
-        try {
-            User user = userRepository.findById(UUID.fromString(userId)).orElse(null);
-            if (user == null) {
-                return ServiceResult.failure("User not found", "USER_NOT_FOUND");
-            }
-            
-            user = userRepository.save(user);
-            
-            return ServiceResult.success(null);
-        } catch (Exception e) {
-            return ServiceResult.failure("Operation failed: " + e.getMessage(), "OPERATION_ERROR");
         }
     }
 }

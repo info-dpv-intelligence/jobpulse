@@ -1,4 +1,4 @@
-package com.jobpulse.auth_service.service;
+package com.jobpulse.auth_service.service.module.event.publish;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

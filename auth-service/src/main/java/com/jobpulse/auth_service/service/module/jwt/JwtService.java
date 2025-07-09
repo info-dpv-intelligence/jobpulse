@@ -1,4 +1,4 @@
-package com.jobpulse.auth_service.service;
+package com.jobpulse.auth_service.service.module.jwt;
 
 import com.jobpulse.auth_service.dto.GenerateTokenRequest;
 import com.jobpulse.auth_service.dto.RefreshTokenRequest;
@@ -6,6 +6,9 @@ import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.model.RefreshToken;
 import com.jobpulse.auth_service.repository.RefreshTokenRepository;
 import com.jobpulse.auth_service.repository.UserRepository;
+import com.jobpulse.auth_service.service.module.jwt.dto.JwtConfig;
+import com.jobpulse.auth_service.service.module.jwt.factory.JwtServiceFactory;
+
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,24 +26,20 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 public class JwtService implements JwtServiceContract {
-
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${jwt.expiration-ms}")
-    private long jwtExpirationMs;
-
-    @Value("${refresh.expiration-ms:2592000000}")
-    private long refreshExpirationMs;
-
+    private JwtConfig jwtConfig;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(this.jwtConfig.jwtSecret().(StandardCharsets.UTF_8));
     }
 
-    public JwtService(RefreshTokenRepository refreshTokenRepository, UserRepository userRepository) {
+    public JwtService(
+        JwtConfig jwtConfig,
+        RefreshTokenRepository refreshTokenRepository, 
+        UserRepository userRepository
+    ) {
+        this.jwtConfig = jwtConfig;
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
     }
@@ -53,7 +52,7 @@ public class JwtService implements JwtServiceContract {
             .subject(request.getUserId().toString())
             .claim("role", request.getRole().name())
             .issuedAt(Date.from(now))
-            .expiration(Date.from(now.plusMillis(jwtExpirationMs)))
+            .expiration(Date.from(now.plusMillis(this.jwtConfig.jwtExpirationMs())))
             .signWith(getSigningKey())
             .compact();
     }
@@ -78,7 +77,7 @@ public class JwtService implements JwtServiceContract {
             .orElseThrow(() -> new RuntimeException("User not found"));
             
         String token = generateSecureToken();
-        Instant expiresAt = Instant.now().plusMillis(refreshExpirationMs);
+        Instant expiresAt = Instant.now().plusMillis(this.jwtConfig.refreshExpirationMs());
 
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(token);
