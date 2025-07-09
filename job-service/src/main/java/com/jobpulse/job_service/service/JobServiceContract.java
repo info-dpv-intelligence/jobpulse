@@ -1,9 +1,14 @@
 package com.jobpulse.job_service.service;
 
 import com.jobpulse.job_service.dto.ServiceResult;
+import com.jobpulse.job_service.dto.UpdateJobPostCommand;
+import com.jobpulse.job_service.dto.DeleteJobPostCommand;
 import com.jobpulse.job_service.dto.CreatedResponse;
+import com.jobpulse.job_service.dto.DeletedResponse;
 import com.jobpulse.job_service.dto.CreateJobPostCommand;
 import com.jobpulse.job_service.dto.JobListingsResponse;
+import com.jobpulse.job_service.dto.JobPostUpdatedResponse;
+
 import org.springframework.data.domain.Pageable;
 
 /**
@@ -28,4 +33,8 @@ public interface JobServiceContract {
      * @return service result with created job response or error details
      */
     ServiceResult<CreatedResponse> createJob(CreateJobPostCommand command);
+
+    ServiceResult<JobPostUpdatedResponse> updateJob(UpdateJobPostCommand command);
+
+    ServiceResult<DeletedResponse> deleteJob(DeleteJobPostCommand command);
 }
