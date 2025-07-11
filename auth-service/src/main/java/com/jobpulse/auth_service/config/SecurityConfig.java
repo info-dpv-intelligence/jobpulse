@@ -6,6 +6,7 @@ import javax.crypto.SecretKey;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -13,6 +14,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import io.jsonwebtoken.security.Keys;
 
 @org.springframework.context.annotation.Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
 
@@ -31,10 +33,10 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/ping", 
                     "/ping/",
-                    "/auth/register",
-                    "/auth/register/",
-                    "/auth/login",
-                    "/auth/login/",
+                    "/v1/auth/register",
+                    "/v1/auth/register/",
+                    "/v1/auth/login",
+                    "/v1/auth/login/",
                     "/actuator/health",
                     "/actuator/**",
                     // OpenAPI/Swagger UI endpoints
@@ -48,28 +50,8 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()
             )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> {})
-                .bearerTokenResolver(request -> {
-                    // Don't try to resolve bearer tokens for API docs endpoints
-                    String requestURI = request.getRequestURI();
-                    if (requestURI.startsWith("/v3/api-docs") || 
-                        requestURI.startsWith("/swagger-ui") || 
-                        requestURI.equals("/swagger-ui.html") ||
-                        requestURI.startsWith("/swagger-resources") ||
-                        requestURI.startsWith("/webjars") ||
-                        requestURI.startsWith("/configuration")) {
-                        return null;
-                    }
-                    
-                    // Default behavior for other endpoints
-                    String authHeader = request.getHeader("Authorization");
-                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                        return authHeader.substring(7);
-                    }
-                    return null;
-                })
-            );
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));
+        
         return http.build();
     }
 }

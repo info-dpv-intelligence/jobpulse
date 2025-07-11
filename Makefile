@@ -49,6 +49,9 @@ endif
 GREEN := \033[0;32m
 YELLOW := \033[1;33m
 BLUE := \033[0;34m
+RED := \033[0;31m
+NC := \033[0m
+BLUE := \033[0;34m
 CYAN := \033[0;36m
 NC := \033[0m
 
@@ -66,7 +69,7 @@ help:
 	@echo "  make observability  - Start observability stack only"
 	@echo ""
 	@echo "$(YELLOW)Utility Commands:$(NC)"
-	@echo "  make build          - Build all images"
+	@echo "  make build          - Build all images (automatically cleans old project images)"
 	@echo "  make restart        - Restart services"
 	@echo "  make logs           - Show service logs"
 	@echo "  make clean          - Clean up containers and volumes"
@@ -132,7 +135,12 @@ full-down:
 # Utility commands
 build:
 	@echo "$(BLUE)🔨 Building $(ENV) images...$(NC)"
+	@echo "$(YELLOW)🧹 Cleaning old project images...$(NC)"
+	@docker images --filter "reference=jobpulse-*" --format "{{.ID}}" | head -20 | xargs -r docker rmi -f 2>/dev/null || true
+	@docker image prune -f --filter "label=org.springframework.boot.version" 2>/dev/null || true
+	@echo "$(YELLOW)🔨 Building new images...$(NC)"
 	@docker-compose -f $(COMPOSE_BASE) -f $(COMPOSE_ENV) build
+	@echo "$(GREEN)✅ Images built and old images cleaned$(NC)"
 
 restart:
 	@echo "$(BLUE)🔄 Restarting $(ENV) services...$(NC)"

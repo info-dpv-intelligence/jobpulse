@@ -6,13 +6,13 @@
     <springProfile name="!prod">
         <property name="LOG_LEVEL_ROOT" value="INFO"/>
         <property name="LOG_LEVEL_APP" value="DEBUG"/>
-        <property name="LOG_FILE_PATH" value="logs"/>
+        <property name="LOG_FILE_PATH" value="${LOG_PATH:-./logs}"/>
     </springProfile>
     
     <springProfile name="prod">
         <property name="LOG_LEVEL_ROOT" value="WARN"/>
         <property name="LOG_LEVEL_APP" value="INFO"/>
-        <property name="LOG_FILE_PATH" value="/var/log/jobpulse"/>
+        <property name="LOG_FILE_PATH" value="${LOG_PATH:-/var/log/jobpulse}"/>
     </springProfile>
 
     <!-- Console appender with structured logging -->
