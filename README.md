@@ -15,7 +15,7 @@ A microservices-based job posting and application management system built with J
 
 **Microservices:**
 - `auth-service` (8080) - JWT authentication & user management
-- `job-service` (8081) - Job posting CRUD with pagination
+- `job-service` (8081) - Boilerplate only; no architectural patterns or business logic applied yet. Contains a basic pagination request. Needs architecture review and implementation.
 - `application-service` (8082) - Application management *(API in progress)*
 - `alert-worker` (8083) - Event processing *(implementation pending)*
 
@@ -39,7 +39,7 @@ Detailed architecture diagrams and design documents are available in the `docs/`
 
 **Core Functionality:**
 - User registration/login with JWT tokens
-- Job posting creation and listing with pagination
+- Job posting creation and listing with pagination *(job-service endpoints are placeholders; implementation pending)*
 - Role-based access control
 
 **Event-Driven Architecture:**
@@ -55,7 +55,7 @@ Detailed architecture diagrams and design documents are available in the `docs/`
 - Custom endpoint metrics with AOP
 
 **API Documentation:**
-- OpenAPI/Swagger for job-service
+- OpenAPI/Swagger for auth-service
 - Comprehensive endpoint documentation
 
 ## 🔧 Quick Start
@@ -99,7 +99,6 @@ GET  /actuator/prometheus # Prometheus metrics
 **Job Service (8081):**
 ```
 GET  /api/v1/jobs        # List jobs (paginated)
-POST /api/v1/jobs        # Create job posting
 GET  /actuator/prometheus # Prometheus metrics
 ```
 
@@ -108,9 +107,7 @@ GET  /actuator/prometheus # Prometheus metrics
 ## 📊 Monitoring & Observability
 
 **Metrics Collection:**
-- Business metrics: Registration/login attempts, job searches, creation rates
-- Technical metrics: Response times, error rates, JVM performance
-- Database metrics: Connection pool usage, query performance
+- Business metrics: *(planned for future implementation)*
 
 **Monitoring Stack:**
 - **Prometheus:** [http://localhost:9090](http://localhost:9090) - Metrics collection
@@ -131,6 +128,8 @@ GET  /actuator/prometheus # Prometheus metrics
 
 ## 🚧 To Be Implemented
 
+- [ ] **Job Service Review:** The current job-service is a boilerplate; no architectural patterns or business logic have been applied yet. A design review and proper implementation are required.
+- [ ] Job Create/Get Endpoints: The job creation and retrieval endpoints are placeholders and need to be implemented according to the decided design and best practices.
 - [ ] Job update/delete operations
 - [ ] Advanced job search and filtering
 - [ ] Application submission API (application-service)
@@ -139,4 +138,6 @@ GET  /actuator/prometheus # Prometheus metrics
 - [ ] Enhanced input validation and error handling
 - [ ] Comprehensive integration test suite
 
+
 *Note: This is a demonstration project.*
+*Note: Only the auth-service is suitable for demo purposes. The job-service is a boilerplate and not production-ready.*
