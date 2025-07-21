@@ -1,12 +1,16 @@
 package com.jobpulse.auth_service.model;
 
 import com.jobpulse.auth_service.domain.AggregateRoot;
+import com.jobpulse.auth_service.domain.DomainEvent;
 import com.jobpulse.auth_service.domain.UserRegisteredEvent;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.AfterDomainEventPublication;
+import org.springframework.data.domain.DomainEvents;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -16,6 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends AggregateRoot {
+    
     @Id
     @GeneratedValue
     private UUID id;
@@ -42,11 +47,22 @@ public class User extends AggregateRoot {
 
     public void confirmRegistration() {
         if (this.id != null) {
-            raiseEvent(new UserRegisteredEvent(
+            UserRegisteredEvent event = new UserRegisteredEvent(
                 this.id.toString(), 
                 this.email, 
                 this.role.name()
-            ));
+            );
+            raiseEvent(event);
         }
+    }
+
+    @DomainEvents
+    public List<DomainEvent> domainEvents() {
+        return getDomainEvents();
+    }
+
+    @AfterDomainEventPublication
+    public void clearDomainEvents() {
+        clearEvents();
     }
 }

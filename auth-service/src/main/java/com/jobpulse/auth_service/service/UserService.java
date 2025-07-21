@@ -13,7 +13,6 @@ import com.jobpulse.auth_service.service.module.jwt.JwtServiceContract;
 import com.jobpulse.auth_service.service.module.password.PasswordServiceContract;
 import com.jobpulse.auth_service.factory.ServiceFactory;
 import com.jobpulse.auth_service.model.RefreshToken;
-import com.jobpulse.auth_service.domain.PublishDomainEvents;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +36,6 @@ public class UserService implements UserServiceContract {
 
     @Override
     @Transactional
-    @PublishDomainEvents(async = true)
     public ServiceResult<UserRegistrationResponse> registerUser(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             return ServiceResult.failure("Email already in use", "EMAIL_EXISTS");
@@ -49,6 +47,7 @@ public class UserService implements UserServiceContract {
                                     request.getRole());
             user = userRepository.save(user);
             user.confirmRegistration();
+            userRepository.save(user);
 
             UserRegistrationResponse response = UserRegistrationResponse.success(user.getId().toString());
             
