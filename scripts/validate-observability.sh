@@ -10,6 +10,23 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Load environment variables
+if [ -f "$(dirname "$0")/../.env" ]; then
+    source "$(dirname "$0")/../.env"
+fi
+
+# Default credentials (should be overridden by environment variables)
+GRAFANA_USER=${GRAFANA_USER:-admin}
+GRAFANA_PASSWORD=${GRAFANA_PASSWORD:-}
+
+# Check if required credentials are set
+if [ -z "$GRAFANA_PASSWORD" ]; then
+    echo -e "${RED}❌ GRAFANA_PASSWORD environment variable is required${NC}"
+    echo "Please set GRAFANA_PASSWORD in your .env file or export it:"
+    echo "export GRAFANA_PASSWORD=your_password"
+    exit 1
+fi
+
 # Environment detection
 ENV=${1:-dev}
 case $ENV in
@@ -92,7 +109,7 @@ check_grafana_dashboard() {
     echo -e "${BLUE}Checking Grafana dashboard...${NC}"
     
     # Check if dashboard exists
-    local dashboard_response=$(curl -s -u admin:jobpulse123 "$GRAFANA_URL/api/dashboards/uid/jobpulse-overview")
+    local dashboard_response=$(curl -s -u "$GRAFANA_USER:$GRAFANA_PASSWORD" "$GRAFANA_URL/api/dashboards/uid/jobpulse-overview")
     
     if echo "$dashboard_response" | jq -r '.dashboard.title' | grep -q "JobPulse"; then
         echo -e "${GREEN}✅ JobPulse dashboard is available${NC}"
@@ -102,7 +119,7 @@ check_grafana_dashboard() {
     fi
     
     # Check data sources
-    local datasources_response=$(curl -s -u admin:jobpulse123 "$GRAFANA_URL/api/datasources")
+    local datasources_response=$(curl -s -u "$GRAFANA_USER:$GRAFANA_PASSWORD" "$GRAFANA_URL/api/datasources")
     
     if echo "$datasources_response" | jq -r '.[].name' | grep -q "Prometheus"; then
         echo -e "${GREEN}✅ Prometheus data source configured${NC}"
@@ -205,7 +222,7 @@ generate_report() {
     
     echo ""
     echo -e "${YELLOW}Quick Access URLs:${NC}"
-    echo "📊 Grafana Dashboard: $GRAFANA_URL (admin/jobpulse123)"
+    echo "📊 Grafana Dashboard: $GRAFANA_URL (${GRAFANA_USER}/***)"
     echo "📈 Prometheus: $PROMETHEUS_URL"
     echo "🔍 Jaeger Tracing: $JAEGER_URL"
     echo ""

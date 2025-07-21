@@ -60,16 +60,32 @@ Detailed architecture diagrams and design documents are available in the `docs/`
 
 ## 🔧 Quick Start
 
-```bash
-# Start all services
-make ENV=dev up
+### Environment Setup
+1. **Copy environment template:**
+   ```bash
+   cp .env.example .env
+   ```
 
-# Start observability stack
-./start-observability.sh
+2. **Configure credentials in `.env`:**
+   ```bash
+   # Required: Set your Grafana password
+   GRAFANA_PASSWORD=your_secure_password_here
+   
+   # Optional: Override default URLs if needed
+   # GRAFANA_URL=http://localhost:3000
+   ```
 
-# Health check
-curl http://localhost:8081/actuator/health
-```
+3. **Start services:**
+   ```bash
+   # Start all services
+   make ENV=dev up
+
+   # Start observability stack
+   ./start-observability.sh
+
+   # Health check
+   curl http://localhost:8081/actuator/health
+   ```
 
 ## 📋 API Endpoints
 
@@ -98,7 +114,7 @@ GET  /actuator/prometheus # Prometheus metrics
 
 **Monitoring Stack:**
 - **Prometheus:** [http://localhost:9090](http://localhost:9090) - Metrics collection
-- **Grafana:** [http://localhost:3000](http://localhost:3000) - Dashboards (admin/jobpulse123)
+- **Grafana:** [http://localhost:3000](http://localhost:3000) - Dashboards (admin/your_password)
 - **Jaeger:** [http://localhost:16686](http://localhost:16686) - Distributed tracing
 
 **Real-time Monitoring:**

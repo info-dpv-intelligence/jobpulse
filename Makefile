@@ -26,13 +26,13 @@ else ifeq ($(ENV),test)
 	GRAFANA_PORT := 3001
 	PROMETHEUS_PORT := 9091
 	JAEGER_PORT := 16687
-	GRAFANA_PASSWORD := jobpulse-test-456
+	GRAFANA_PASSWORD := $${GRAFANA_ADMIN_PASSWORD:-jobpulse-test-456}
 	BASE_URL := localhost
 else
 	GRAFANA_PORT := 3000
 	PROMETHEUS_PORT := 9090
 	JAEGER_PORT := 16686
-	GRAFANA_PASSWORD := jobpulse-dev-123
+	GRAFANA_PASSWORD := $${GRAFANA_ADMIN_PASSWORD:-jobpulse-dev-123}
 	BASE_URL := localhost
 endif
 
@@ -206,7 +206,7 @@ urls:
 	@echo "$(BLUE)🔗 $(ENV) Environment URLs:$(NC)"
 	@echo ""
 	@echo "$(YELLOW)🔍 Observability:$(NC)"
-	@echo "  📊 Grafana:     http://$(BASE_URL):$(GRAFANA_PORT) (admin/$(GRAFANA_PASSWORD))"
+	@echo "  📊 Grafana:     http://$(BASE_URL):$(GRAFANA_PORT) (admin/***)"
 	@echo "      - Overview Dashboard: /d/jobpulse-overview"
 	@echo "      - Auth Service: /d/auth-service-dashboard"  
 	@echo "      - Job Service: /d/job-service-dashboard"

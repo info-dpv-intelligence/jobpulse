@@ -36,7 +36,15 @@ out/
 ### VS Code ###
 .vscode/
 
-### Log files ###
+### Environment Variables ###
+.env
+.env.local
+.env.*.local
+
+### Docker Override Files ###
+docker-compose.override.yml
+
+### Logs ###
 logs/
-*/logs/
+**/logs/
 *.log
