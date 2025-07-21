@@ -20,18 +20,14 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.JwtException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * JWT service implementation.
- * Handles JWT token generation, validation, and refresh token management.
- * This service is created via factory pattern rather than Spring annotation.
- */
 public class JwtService implements JwtServiceContract {
     private JwtConfig jwtConfig;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(this.jwtConfig.jwtSecret().getBytes(StandardCharsets.UTF_8));
+        byte[] keyBytes = this.jwtConfig.jwtSecret().getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public JwtService(

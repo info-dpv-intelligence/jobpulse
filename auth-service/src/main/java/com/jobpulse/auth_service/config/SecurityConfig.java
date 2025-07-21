@@ -23,8 +23,11 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(@Value("${jwt.secret}") String jwtSecret) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        return NimbusJwtDecoder.withSecretKey(key).build();
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+        return NimbusJwtDecoder.withSecretKey(key)
+            .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS384)
+            .build();
     }
 
     @Bean
@@ -46,7 +49,6 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints - no authentication required
                 .requestMatchers(
                     "/v1/auth/register",
                     "/v1/auth/login",
@@ -55,7 +57,6 @@ public class SecurityConfig {
                     "/actuator/health",
                     "/actuator/prometheus",
                     "/actuator/metrics/**",
-                    // OpenAPI/Swagger UI endpoints
                     "/v3/api-docs/**",
                     "/v3/api-docs.json",
                     "/swagger-ui/**",
@@ -64,7 +65,6 @@ public class SecurityConfig {
                     "/webjars/**",
                     "/configuration/**"
                 ).permitAll()
-                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

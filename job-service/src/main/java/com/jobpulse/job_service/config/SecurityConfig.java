@@ -35,9 +35,11 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(@Value("${jwt.secret}") String jwtSecret) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        
-        return NimbusJwtDecoder.withSecretKey(key).build();
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        SecretKey key = Keys.hmacShaKeyFor(keyBytes);
+        return NimbusJwtDecoder.withSecretKey(key)
+            .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS384)
+            .build();
     }
 
     @Bean
@@ -50,10 +52,8 @@ public class SecurityConfig {
                     "/ping/", 
                     "/actuator/health",
                     "/actuator/**",
-                    // Job service endpoints
                     "/v1/jobs/",
                     "/v1/jobs",
-                    // OpenAPI/Swagger UI endpoints
                     "/v3/api-docs/**",
                     "/v3/api-docs.json",
                     "/swagger-ui/**",
