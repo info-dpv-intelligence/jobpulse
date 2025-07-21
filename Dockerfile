@@ -9,13 +9,12 @@ ARG SERVICE_NAME
 # Copy the fat JAR (excludes the -plain.jar file)
 COPY --from=build /workspace/${SERVICE_NAME}/build/libs/${SERVICE_NAME}-*-SNAPSHOT.jar app.jar
 
-# Create logs directory and set log path
-RUN mkdir -p /app/logs
-ENV LOG_PATH=/app/logs
-
 # Use a non-root user for security (optional but recommended)
-RUN useradd -ms /bin/bash appuser && \
-    chown -R appuser:appuser /app
+RUN useradd -ms /bin/bash appuser
+
+# Create logs directory with proper permissions
+RUN mkdir -p /app/logs && chown -R appuser:appuser /app/logs
+
 USER appuser
 
 EXPOSE 8080
