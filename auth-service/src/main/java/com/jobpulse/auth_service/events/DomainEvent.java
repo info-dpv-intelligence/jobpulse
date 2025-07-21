@@ -1,11 +1,8 @@
-package com.jobpulse.auth_service.domain;
+package com.jobpulse.auth_service.events;
 
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Base interface for all domain events.
- */
 public interface DomainEvent {
     UUID getEventId();
     Instant getOccurredOn();

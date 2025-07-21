@@ -1,7 +1,7 @@
 package com.jobpulse.auth_service.model;
 
-import com.jobpulse.auth_service.domain.AggregateRoot;
-import com.jobpulse.auth_service.domain.UserRegisteredEvent;
+import com.jobpulse.auth_service.events.AggregateRoot;
+import com.jobpulse.auth_service.events.UserRegisteredEvent;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

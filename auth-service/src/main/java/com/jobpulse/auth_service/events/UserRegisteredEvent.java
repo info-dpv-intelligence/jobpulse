@@ -1,12 +1,9 @@
-package com.jobpulse.auth_service.domain;
+package com.jobpulse.auth_service.events;
 
 import lombok.Getter;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Domain event published when a new user is registered.
- */
 @Getter
 public class UserRegisteredEvent implements DomainEvent {
     private final UUID eventId;

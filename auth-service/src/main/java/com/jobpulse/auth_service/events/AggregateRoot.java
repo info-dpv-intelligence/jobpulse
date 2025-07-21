@@ -1,4 +1,4 @@
-package com.jobpulse.auth_service.domain;
+package com.jobpulse.auth_service.events;
 
 import lombok.Getter;
 import org.springframework.data.domain.AfterDomainEventPublication;

@@ -1,7 +1,7 @@
 package com.jobpulse.auth_service.service.module.event.publish;
 
-import com.jobpulse.auth_service.domain.DomainEvent;
-import com.jobpulse.auth_service.domain.UserRegisteredEvent;
+import com.jobpulse.auth_service.events.DomainEvent;
+import com.jobpulse.auth_service.events.UserRegisteredEvent;
 import com.jobpulse.auth_service.events.UserEvent;
 import com.jobpulse.auth_service.logging.LoggingConfig;
 import com.jobpulse.auth_service.logging.LoggingConstants;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO: review the publish switch case statements
 @Service
 public class DomainEventPublisher {
     

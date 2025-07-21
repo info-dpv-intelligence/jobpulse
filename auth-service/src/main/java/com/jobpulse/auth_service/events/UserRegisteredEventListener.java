@@ -1,6 +1,6 @@
 package com.jobpulse.auth_service.events;
 
-import com.jobpulse.auth_service.domain.UserRegisteredEvent;
+import com.jobpulse.auth_service.events.UserRegisteredEvent;
 import com.jobpulse.auth_service.service.module.event.publish.DomainEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
