@@ -1,5 +1,6 @@
 package com.jobpulse.auth_service.events;
 
+import com.jobpulse.auth_service.enums.UserEventType;
 import lombok.Getter;
 import java.time.Instant;
 import java.util.UUID;
@@ -22,7 +23,7 @@ public class UserRegisteredEvent implements DomainEvent {
 
     @Override
     public String getEventType() {
-        return "UserRegistered";
+        return UserEventType.USER_REGISTERED.name();
     }
 
     @Override

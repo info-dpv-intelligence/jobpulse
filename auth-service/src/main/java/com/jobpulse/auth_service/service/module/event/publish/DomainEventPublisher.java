@@ -3,6 +3,7 @@ package com.jobpulse.auth_service.service.module.event.publish;
 import com.jobpulse.auth_service.events.DomainEvent;
 import com.jobpulse.auth_service.events.UserRegisteredEvent;
 import com.jobpulse.auth_service.events.UserEvent;
+import com.jobpulse.auth_service.enums.UserEventType;
 import com.jobpulse.auth_service.logging.LoggingConfig;
 import com.jobpulse.auth_service.logging.LoggingConstants;
 import com.jobpulse.auth_service.logging.StructuredLogger;
@@ -32,18 +33,16 @@ public class DomainEventPublisher {
 
     public void publish(DomainEvent domainEvent) {
         try {
-            switch (domainEvent.getEventType()) {
-                case "UserRegistered":
-                    publishUserRegisteredEvent((UserRegisteredEvent) domainEvent);
-                    break;
-                default:
-                    Map<String, Object> context = new HashMap<>();
-                    context.put("unknownEventType", domainEvent.getEventType());
-                    logger.warn(
-                        LoggingConstants.EVENT_ERROR,
-                        "Unknown domain event type: " + domainEvent.getEventType(),
-                        context
-                    );
+            if (UserEventType.USER_REGISTERED.name().equals(domainEvent.getEventType())) {
+                publishUserRegisteredEvent((UserRegisteredEvent) domainEvent);
+            } else {
+                Map<String, Object> context = new HashMap<>();
+                context.put("unknownEventType", domainEvent.getEventType());
+                logger.warn(
+                    LoggingConstants.EVENT_ERROR,
+                    "Unknown domain event type: " + domainEvent.getEventType(),
+                    context
+                );
             }
         } catch (Exception e) {
             Map<String, Object> errorContext = new HashMap<>();

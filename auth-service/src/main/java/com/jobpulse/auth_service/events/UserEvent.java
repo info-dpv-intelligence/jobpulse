@@ -1,5 +1,6 @@
 package com.jobpulse.auth_service.events;
 
+import com.jobpulse.auth_service.enums.UserEventType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,26 +9,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserEvent {
-    private EventType eventType;
+    private UserEventType eventType;
     private String userId;
     private String email;
     private String role;
 
-    public enum EventType {
-        REGISTERED,
-        UPDATED,
-        DELETED
-    }
-
     public static UserEvent registered(String userId, String email, String role) {
-        return new UserEvent(EventType.REGISTERED, userId, email, role);
+        return new UserEvent(UserEventType.USER_REGISTERED, userId, email, role);
     }
 
     public static UserEvent updated(String userId, String email, String role) {
-        return new UserEvent(EventType.UPDATED, userId, email, role);
+        return new UserEvent(UserEventType.USER_UPDATED, userId, email, role);
     }
     
     public static UserEvent deleted(String userId, String email, String role) {
-        return new UserEvent(EventType.DELETED, userId, email, role);
+        return new UserEvent(UserEventType.USER_DELETED, userId, email, role);
     }
 }
