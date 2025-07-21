@@ -1,12 +1,12 @@
 package com.jobpulse.auth_service.domain;
 
 import lombok.Getter;
+import org.springframework.data.domain.AfterDomainEventPublication;
+import org.springframework.data.domain.DomainEvents;
+
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Base class for domain entities that can raise domain events.
- */
 @Getter
 public abstract class AggregateRoot {
     private final List<DomainEvent> domainEvents = new ArrayList<>();
@@ -21,5 +21,15 @@ public abstract class AggregateRoot {
 
     public boolean hasEvents() {
         return !domainEvents.isEmpty();
+    }
+
+    @DomainEvents
+    public List<DomainEvent> domainEvents() {
+        return new ArrayList<>(domainEvents);
+    }
+
+    @AfterDomainEventPublication
+    public void clearDomainEvents() {
+        clearEvents();
     }
 }

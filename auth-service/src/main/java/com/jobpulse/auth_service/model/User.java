@@ -1,16 +1,12 @@
 package com.jobpulse.auth_service.model;
 
 import com.jobpulse.auth_service.domain.AggregateRoot;
-import com.jobpulse.auth_service.domain.DomainEvent;
 import com.jobpulse.auth_service.domain.UserRegisteredEvent;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.AfterDomainEventPublication;
-import org.springframework.data.domain.DomainEvents;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -34,9 +30,6 @@ public class User extends AggregateRoot {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    /**
-     * Factory method to create a new user.
-     */
     public static User register(String email, String password, UserRole role) {
         User user = new User();
         user.setEmail(email);
@@ -54,15 +47,5 @@ public class User extends AggregateRoot {
             );
             raiseEvent(event);
         }
-    }
-
-    @DomainEvents
-    public List<DomainEvent> domainEvents() {
-        return getDomainEvents();
-    }
-
-    @AfterDomainEventPublication
-    public void clearDomainEvents() {
-        clearEvents();
     }
 }
