@@ -11,11 +11,7 @@ title JobPulse Job Service Architecture
 package JobServicePackage {
     package "com.jobpulse.jobpostsandapply" {
         package controller {
-            class JobPostAndApplyController {
-                +getJobListings(): ServiceResult<JobListingsPaginatedResponse>
-                +createJob(CreateJobPostRequest): ServiceResult<CreateJobPostResponse>
-                +applyJob(ApplyToJobRequest): ServiceResult<ApplyToJobResponse>
-            }
+            class JobPostAndApplyController {}
         }
         package dto {
             package request {
@@ -30,7 +26,7 @@ package JobServicePackage {
                 class ServiceResult<T> {}
                 class CreateJobPostResponse
                 class ApplyToJobResponse
-                class JobListingsPaginatedResponse
+                class JobListingsResponse
             }
         }
         package repository {
@@ -38,7 +34,7 @@ package JobServicePackage {
         }
         package service {
             interface JobPostAndApplicationContract  {
-                +getJobListings(): ServiceResult<JobListingsPaginatedResponse>
+                +getJobListings(): ServiceResult<JobListingsResponse>
                 +createJob(CreateJobPostRequest): ServiceResult<CreateJobPostResponse>
                 +applyJob(ApplyToJobRequest): ServiceResult<ApplyToJobResponse>
             }
@@ -48,11 +44,47 @@ package JobServicePackage {
         }
 
         JobPostAndApplyController --> JobPostAndApplicationContract
-        JobPostAndApplicationContract --> JobPostAndApplicationRepository
+        JobPostAndApplicationContract <|.. JobPostAndApplicationService
+        JobPostAndApplicationService --> JobPostAndApplicationRepository
     }
-    package "job-poster" {
-        interface JobPoster
-        class JobPosterController
+    package "com.jobpulse.jobposter" {
+        package controller {
+            class JobPosterController {
+            }
+        }
+        package dto {
+            package request {
+                class JobPostsRequest
+                class JobPostApplicationsRequest
+            }
+            package response {
+                class ServiceResult<T> {}
+                class JobPostsResponse
+                class JobPostApplicationsResponse
+            }
+        }
+        package event {
+            class JobApplicationStausUpdate {
+                +jobPostId: UUID
+                +jobApplicantionId: UUID
+                +jobApplicantId: UUID
+            }
+        }
+        package repository {
+            interface JobPosterRepository 
+        }
+        package service {
+            interface JobPosterContract {
+                +getJobPostsByPoster(JobPostsRequest): ServiceResult<JobPostsResponse>
+                +editJobPost(EditJobPostRequest): ServiceResult<EditJobPostResponse>
+                +getJobPostApplications(JobPostApplicationsRequest): ServiceResult<JobPostApplicationsResponse>
+            }
+            class JobPosterService implements JobPosterContract {
+            }
+        }
+        JobPosterController --> JobPosterContract
+        JobPosterContract <|.. JobPosterService
+        JobPostService --> JobPosterRepository
     }
     package "job-applicant" {
         interface JobApplicant
@@ -67,41 +99,6 @@ note top of JobServicePackage
   Each module is independent, relies only on contracts, and can be deployed as a separate microservice for scalability.
 end note
 
-package "Controllers" {
-    class JobServiceJobPostController {
-
-    }
-}
-
-' package "Services" {
-'     interface JobServiceContract {
-'         +getJobListings(Pageable): ServiceResult<JobListingsPaginatedResponse>
-'         +createJob(CreateJobPostCommand): ServiceResult<CreatedResponse>
-'     }
-    
-'     class JobService {
-'         -jobPostRepository: JobPostRepository
-'         +getJobListings(Pageable): ServiceResult<JobListingsPaginatedResponse>
-'         +createJob(CreateJobPostCommand): ServiceResult<CreatedResponse>
-'     }
-' }
-
-' package "Repositories" {
-'     interface JobPostRepository {
-'         +findAll(Pageable): Page<JobPost>
-'         +save(JobPost): JobPost
-'     }
-    
-'     interface JobApplicationRepository {
-'         +save(JobApplication): JobApplication
-'         +findByJobPostId(UUID): List<JobApplication>
-'     }
-    
-'     interface ApplicationFilesRepository {
-'         +save(ApplicationFiles): ApplicationFiles
-'         +findByJobApplicationId(UUID): List<ApplicationFiles>
-'     }
-' }
 
 package "JobPoster" {
     package Enum {            
@@ -315,11 +312,11 @@ package "JobApplicant" {
 '         +jobPosterId: UUID
 '     }
     
-'     class JobListingsPaginatedResponse {
+'     class JobListingsResponse {
 '         +jobs: List<JobPost>
 '         +totalElements: long
 '         +totalPages: int
-'         +{static} from(Page<JobPost>): JobListingsPaginatedResponse
+'         +{static} from(Page<JobPost>): JobListingsResponse
 '     }
     
 '     class CreatedResponse {
@@ -352,7 +349,7 @@ package "JobApplicant" {
 
 ' JobServiceController --> CreateJobPostRequest : receives
 ' JobService --> CreateJobPostCommand : uses
-' JobService --> "ServiceResult<JobListingsPaginatedResponse>" : returns
+' JobService --> "ServiceResult<JobListingsResponse>" : returns
 ' JobService --> "ServiceResult<CreatedResponse>" : returns
 
 ' JobPost --> ApplicationStatus : references
