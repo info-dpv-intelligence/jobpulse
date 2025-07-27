@@ -1,0 +1,56 @@
+package "com.jobpulse.jobposter" {
+    package controller {
+        class JobPosterController {
+        }
+    }
+    package enum {
+        enum ActiveJobPostStatusUpdate {
+            FILLED
+            HOLD
+            CLOSE
+        }
+    }
+    package dto {
+        package request {
+            class JobPostsRequest
+            class JobPostApplicationsRequest
+        }
+        package response {
+            class ServiceResult<T> {
+                -success: boolean
+                -data: T
+                -errorMessage: String
+                -errorCode: String
+                +{static} success(T): ServiceResult<T>
+                +{static} failure(String, String): ServiceResult<T>
+                +isSuccess(): boolean
+                +isFailure(): boolean
+            }
+            class JobPostsResponse
+            class JobPostApplicationsResponse
+        }
+    }
+    package event {
+        class JobPostStausUpdateEvent {
+            +jobPostId: UUID
+            +jobApplicantionId: UUID
+            +jobApplicantId: UUID
+            +updatedById: UUID
+        }
+    }
+    package repository {
+        interface JobPosterRepository 
+    }
+    package service {
+        interface JobPosterContract {
+            +getJobPostsByPoster(JobPostsRequest): ServiceResult<JobPostsResponse>
+            +editJobPostStatus(EditJobPostStatusRequest): ServiceResult<EditJobPostStatusResponse>
+            +getJobPostApplications(JobPostApplicationsRequest): ServiceResult<JobPostApplicationsResponse>
+        }
+        class JobPosterService implements JobPosterContract {
+        }
+    }
+    JobPosterController --> JobPosterContract
+    JobPosterContract <|.. JobPosterService
+    JobPostService --> JobPosterRepository
+}
