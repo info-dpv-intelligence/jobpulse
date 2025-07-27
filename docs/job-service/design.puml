@@ -9,9 +9,9 @@ skinparam class {
 title JobPulse Job Service Architecture
 
 package JobServicePackage {
-    package "com.jobpulse.jobpostsandapply" {
+    package "com.jobpulse.jobcreationlisting" {
         package controller {
-            class JobPostAndApplyController {}
+            class JobPostCreationListingController {}
         }
         package dto {
             package repository {
@@ -24,11 +24,10 @@ package JobServicePackage {
                     }
                     class CreateJobPostResponse 
                 }
-
             }
             package request {
-                class CreateJobPostRequests
-                class ApplyToJobRequest
+                class CreateJobPostRequest
+                class GetJobPostsRequest
             }
             package response {
                 class ServiceResult<T> {
@@ -42,7 +41,6 @@ package JobServicePackage {
                     +isFailure(): boolean
                 }
                 class CreateJobPostResponse
-                class ApplyToJobResponse
                 class JobListingsResponse
             }
         }
@@ -54,13 +52,6 @@ package JobServicePackage {
             }
         }
         package event {
-            class JobApplicantSentEvent {
-                +jobApplicationId: UUID
-                +jobPostId: UUID
-                +jobApplicantId: UUID
-                +createdAt: LocalDateTime
-                +updatedById: UUID
-            }
             class JobPostCreatedEvent {
                 +jobPostId: UUID
                 +createdAt: LocalDateTime
@@ -68,24 +59,23 @@ package JobServicePackage {
             }
         }
         package repository {
-            interface JobPostAndApplicationRepository {
+            interface JobPostCreationAndListingRepository {
                 +createJobPost(CreateJobPostCommand command): OperationResult<CreateJobPostResponse>;
             }
         }
         package service {
-            interface JobPostAndApplicationContract  {
-                +getJobListings(): ServiceResult<JobListingsResponse>
+            interface JobPostCreationListingContract  {
+                +getJobListings(GetJobPostsRequest request): ServiceResult<JobListingsResponse>
                 +createJob(CreateJobPostRequest): ServiceResult<CreateJobPostResponse>
-                +applyJob(ApplyToJobRequest): ServiceResult<ApplyToJobResponse>
             }
-            class JobPostAndApplicationService implements JobPostAndApplicationContract {
+            class JobPostCreationListingService implements JobPostCreationListingContract {
 
             }
         }
 
-        JobPostAndApplyController --> JobPostAndApplicationContract
-        JobPostAndApplicationContract <|.. JobPostAndApplicationService
-        JobPostAndApplicationService --> JobPostAndApplicationRepository
+        JobPostCreationListingController --> JobPostCreationListingContract
+        JobPostCreationListingContract <|.. JobPostCreationListingService
+        JobPostCreationListingService --> JobPostCreationAndListingRepository
     }
     package "com.jobpulse.jobposter" {
         package controller {
@@ -143,7 +133,7 @@ package JobServicePackage {
         JobPosterContract <|.. JobPosterService
         JobPostService --> JobPosterRepository
     }
-    package "com.jobpulse.jobapplicant" {
+    package "com.jobpulse.jobseeker" {
         package controller {
             class JobApplicantController {
             }
@@ -153,6 +143,7 @@ package JobServicePackage {
                 class JobPostsRequest
                 class JobPostApplicationsRequest
                 class UpdateAppliedJobStatusRequest
+                class ApplyToJobRequest
             }
             package response {
                 class ServiceResult<T> {
@@ -168,6 +159,7 @@ package JobServicePackage {
                 class JobPostsResponse
                 class JobPostApplicationsResponse
                 class UpdateAppliedJobStatusResponse
+                class ApplyToJobResponse
             }
         }
         package event {
@@ -184,12 +176,20 @@ package JobServicePackage {
                 +jobApplicationFileId: UUID
                 +updatedById: UUID
             }
+            class JobApplicantSentEvent {
+                +jobApplicationId: UUID
+                +jobPostId: UUID
+                +jobApplicantId: UUID
+                +createdAt: LocalDateTime
+                +updatedById: UUID
+            }
         }
         package repository {
             interface JobApplicantRepository 
         }
         package service {
             interface JobApplicantContract {
+                +applyJob(request: ApplyToJobRequest): ServiceResult<ApplyToJobResponse>
                 +getAppliedJobs(request: GetAppliedJobsRequest): ServiceResult<AppliedJobsResponse>
                 +editAppliedJobDocument(request: EditAppliedJobDocumentRequest): ServiceResult<EditAppliedJobDocumentResponse>
                 +updateAppliedJobStatus(request: UpdateAppliedJobStatusRequest): ServiceResult<UpdateAppliedJobStatusResponse>
@@ -204,7 +204,7 @@ package JobServicePackage {
 }
 note top of JobServicePackage
   The JobServicePackage currently hosts the following modules:
-    - job-posts-and-apply: handles job CRUD and applications
+    - job-posts-creation-listing: handles job creation and listings
     - job-poster: manages job posts and reviews applications
     - job-applicant: manages applicant profiles and applications
   Each module is independent, relies only on contracts, and can be deployed as a separate microservice for scalability.
