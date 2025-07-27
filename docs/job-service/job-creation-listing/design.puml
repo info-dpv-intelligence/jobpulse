@@ -1,0 +1,68 @@
+package "com.jobpulse.jobcreationlisting" {
+    package controller {
+        class JobPostCreationListingController {}
+    }
+    package dto {
+        package repository {
+            package command {
+                class CreateJobPostCommand
+            }
+            package response {
+                class OperationResult<T> {
+
+                }
+                class CreateJobPostResponse 
+            }
+        }
+        package request {
+            class CreateJobPostRequest
+            class GetJobPostsRequest
+        }
+        package response {
+            class ServiceResult<T> {
+                -success: boolean
+                -data: T
+                -errorMessage: String
+                -errorCode: String
+                +{static} success(T): ServiceResult<T>
+                +{static} failure(String, String): ServiceResult<T>
+                +isSuccess(): boolean
+                +isFailure(): boolean
+            }
+            class CreateJobPostResponse
+            class JobListingsResponse
+        }
+    }
+    package enum {
+        enum ApplicationDocumentType {
+            RESUME
+            COVER
+            OTHER
+        }
+    }
+    package event {
+        class JobPostCreatedEvent {
+            +jobPostId: UUID
+            +createdAt: LocalDateTime
+            +updatedById: UUID
+        }
+    }
+    package repository {
+        interface JobPostCreationAndListingRepository {
+            +createJobPost(CreateJobPostCommand command): OperationResult<CreateJobPostResponse>;
+        }
+    }
+    package service {
+        interface JobPostCreationListingContract  {
+            +getJobListings(GetJobPostsRequest request): ServiceResult<JobListingsResponse>
+            +createJob(CreateJobPostRequest): ServiceResult<CreateJobPostResponse>
+        }
+        class JobPostCreationListingService implements JobPostCreationListingContract {
+
+        }
+    }
+
+    JobPostCreationListingController --> JobPostCreationListingContract
+    JobPostCreationListingContract <|.. JobPostCreationListingService
+    JobPostCreationListingService --> JobPostCreationAndListingRepository
+}

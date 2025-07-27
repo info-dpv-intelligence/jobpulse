@@ -11,52 +11,58 @@ A microservices-based job posting and application management system built with J
 **Infrastructure:** Docker, Docker Compose  
 **Testing:** JUnit 5  
 
-## 🏗️ Architecture
+## Architecture
 
 **Microservices:**
-- `auth-service` (8080) - JWT authentication & user management
-- `job-service` (8081) - Boilerplate only; no architectural patterns or business logic applied yet. Contains a basic pagination request. Needs architecture review and implementation.
-- `application-service` (8082) - Application management *(API in progress)*
-- `alert-worker` (8083) - Event processing *(implementation pending)*
+- `auth-service` (8080):
+   _Handles user registration, login, and JWT token issuance with embedded roles. Each microservice enforces role-based access control by validating roles from the token._
+- `job-service` (8081):
+   - **job-creation-listing**:
+      _Handles job listings, job creation. Responsible for exposing job opportunities to users._
+   - **job-poster**
+      _Manages job posts from the perspective of the poster. Enables reviewing, updating, and managing applications submitted for owned job posts._
+   - **job-seeker**
+      _Manages job applications (includes updating submitted documents, status)._
+- `alert-worker` (8083):
+   _Handles alerts and notifications (pending)_
 
-**Infrastructure:**
-- PostgreSQL databases per service
-- Kafka for async event communication
-- Full observability stack (Prometheus, Grafana, Jaeger)
-- Comprehensive metrics collection with custom business metrics
-
-## 📐 Architecture Documentation
-
-Detailed architecture diagrams and design documents are available in the `docs/` folder:
+## Architecture Documentation
+**ERD:**
+- [Job Post](docs/job-service/database-design/job_post.puml)
+- [Job Application](docs/job-service/database-design/job_application.puml)
 
 **Service-Specific Architecture:**
 - [Auth Service Architecture](docs/auth-service/auth-service.puml) - Service structure and components
-- [Registration & Login Flow](docs/auth-service/registration-login.puml) - Authentication workflow diagrams
-- [Job Service Design](docs/job-service/design.puml) - Job management service architecture
+- Job Service:
+   - [Job Creation and Listing](docs/job-service/job-creation-listing/design.puml) - Job post creation and listing
+   - [Job Poster](docs/job-service/job-poster/design.puml) - Manage job posts and review applications
+   - [Job Seeker](docs/job-service/job-seeker/design.puml) - Manage applications
 
-
-## ✅ Implemented Features
-
-**Core Functionality:**
-- User registration/login with JWT tokens
-- Job posting creation and listing with pagination *(job-service endpoints are placeholders; implementation pending)*
-- Role-based access control
-
-**Event-Driven Architecture:**
-- Kafka integration for service communication
-- Event publishing for job lifecycle
+## Features
+   - **auth-service**: (Implemented: ✅)
+     - User registration and login with JWT tokens
+     - Role-based access control (RBAC)
+   - **job-service**: (In progress 🚧)
+      - **job-creation-listing**: Issue link (https://github.com/info-dpv-intelligence/jobpulse/issues/7#issue-3267027960)
+         - Retrieve available job postings.
+         - Create a new job post in the system.
+      - **job-poster**:
+         - List all job posts created by the current poster.
+         — Modify the status or visibility of a job post.
+         - Retrieve all applications submitted for a specific job post.
+      - **job-seeker**:
+         - List all applied job applicants.
+         - Submit a job application.
+         - Edit or update documents (resume, cover letter) attached to an application.
+         - Change the status of an application (withdraw, update progress, etc.).
 
 **Observability & Monitoring:**
-- Prometheus metrics collection with custom business metrics
 - Grafana dashboards for visualization
-- Jaeger distributed tracing
+- Jaeger distributed tracing (_configuration review pending ⏳_)
 - Health checks (`/actuator/health`) 
-- Real-time monitoring scripts
-- Custom endpoint metrics with AOP
 
 **API Documentation:**
-- OpenAPI/Swagger for auth-service
-- Comprehensive endpoint documentation
+- OpenAPI/Swagger
 
 ## 🔧 Quick Start
 
@@ -82,27 +88,9 @@ Detailed architecture diagrams and design documents are available in the `docs/`
 
    # Start observability stack
    ./start-observability.sh
-
-   # Health check
-   curl http://localhost:8081/actuator/health
    ```
 
-## 📋 API Endpoints
-
-**Auth Service (8080):**
-```
-POST /api/auth/register  # User registration
-POST /api/auth/login     # Login with JWT response
-GET  /actuator/prometheus # Prometheus metrics
-```
-
-**Job Service (8081):**
-```
-GET  /api/v1/jobs        # List jobs (paginated)
-GET  /actuator/prometheus # Prometheus metrics
-```
-
-**API Documentation:** [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+## 📋 API Documentation:** [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 
 ## 📊 Monitoring & Observability
 
@@ -111,33 +99,5 @@ GET  /actuator/prometheus # Prometheus metrics
 
 **Monitoring Stack:**
 - **Prometheus:** [http://localhost:9090](http://localhost:9090) - Metrics collection
-- **Grafana:** [http://localhost:3000](http://localhost:3000) - Dashboards (admin/your_password)
-- **Jaeger:** [http://localhost:16686](http://localhost:16686) - Distributed tracing
-
-**Real-time Monitoring:**
-```bash
-# Live metrics dashboard
-./scripts/monitor.sh
-
-# Validate observability setup
-./scripts/validate-observability.sh
-
-# Generate load for testing
-./scripts/load-test.sh
-```
-
-## 🚧 To Be Implemented
-
-- [ ] **Job Service Review:** The current job-service is a boilerplate; no architectural patterns or business logic have been applied yet. A design review and proper implementation are required.
-- [ ] Job Create/Get Endpoints: The job creation and retrieval endpoints are placeholders and need to be implemented according to the decided design and best practices.
-- [ ] Job update/delete operations
-- [ ] Advanced job search and filtering
-- [ ] Application submission API (application-service)
-- [ ] Application state tracking and file uploads
-- [ ] Alert worker event processing
-- [ ] Enhanced input validation and error handling
-- [ ] Comprehensive integration test suite
-
-
-*Note: This is a demonstration project.*
-*Note: Only the auth-service is suitable for demo purposes. The job-service is a boilerplate and not production-ready.*
+- **Grafana:** [http://localhost:3000](http://localhost:3000) - Dashboard
+- **Jaeger:** [http://localhost:16686](http://localhost:16686) - Distributed tracing (pending)

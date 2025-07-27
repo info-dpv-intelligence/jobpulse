@@ -1,0 +1,57 @@
+@startuml
+package "JobApplication" {
+    package enum {
+        enum ApplicationDocumentType {
+            RESUME
+            COVER
+            OTHER
+        }
+        enum ApplicationStatus {
+            APPLIED
+            IN_REVIEW
+            REJECTED
+            SHORTLISTED
+            ONBOARDED
+        }
+    }
+    package domain {
+        class JobApplication {
+            +jobApplicationId: UUID
+            +jobPostId: UUID
+            +jobApplicantId: UUID
+            +status: ApplicationStatus
+            +createdAt: LocalDateTime
+            +updatedAt: LocalDateTime
+        }
+        class JobApplicationFileMapping {
+            +jobApplicationDocumentId: UUID
+            +jobPostId: UUID
+            +jobApplicationFileId: UUID
+            +jobApplicationId: UUID
+            +createdAt: LocalDateTime
+            +updatedAt: LocalDateTime
+        }
+
+        note top of JobApplicationFileMapping
+        Acts as a join table between JobApplication and JobApplicationFile.
+        Allows many-to-many relationship: an application can have multiple files,
+        and a file can be used in multiple applications.
+        Indexes:
+            - (jobPostId, jobApplicationId)
+            - createdAt
+        Partitioning: by createdAt (range, typically 3-week intervals)
+        end note
+        class JobApplicationFile {
+            +jobApplicationFileId: UUID
+            +fileName: String
+            +fileType: ApplicationDocumentType
+            +createdAt: LocalDateTime
+            +uploadedAt: LocalDateTime
+        }
+
+        JobApplication "1" -- "0..*" JobApplicationFileMapping
+        JobApplicationFileMapping "1" -- "0..*" JobApplicationFile
+        JobPost "1" -- "0..*" JobApplication
+    }
+}
+@enduml
