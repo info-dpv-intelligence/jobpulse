@@ -98,4 +98,4 @@ A microservices-based job posting and application management system built with J
 **Monitoring Stack:**
 - **Prometheus:** [http://localhost:9090](http://localhost:9090) - Metrics collection
 - **Grafana:** [http://localhost:3000](http://localhost:3000) - Dashboard
-- **Jaeger:** [http://localhost:16686](http://localhost:16686) - Distributed tracing (pending)
+- **Jaeger:** [http://localhost:16686](http://localhost:16686) - Distributed tracing (__configuration pending_)
