@@ -64,10 +64,11 @@ package JobServicePackage {
             }
         }
         package event {
-            class JobApplicationStausUpdate {
+            class JobPostStausUpdate {
                 +jobPostId: UUID
                 +jobApplicantionId: UUID
                 +jobApplicantId: UUID
+                +updatedById: UUID
             }
         }
         package repository {
@@ -76,7 +77,7 @@ package JobServicePackage {
         package service {
             interface JobPosterContract {
                 +getJobPostsByPoster(JobPostsRequest): ServiceResult<JobPostsResponse>
-                +editJobPost(EditJobPostRequest): ServiceResult<EditJobPostResponse>
+                +editJobPostStatus(EditJobPostStatusRequest): ServiceResult<EditJobPostStatusResponse>
                 +getJobPostApplications(JobPostApplicationsRequest): ServiceResult<JobPostApplicationsResponse>
             }
             class JobPosterService implements JobPosterContract {
@@ -86,9 +87,54 @@ package JobServicePackage {
         JobPosterContract <|.. JobPosterService
         JobPostService --> JobPosterRepository
     }
-    package "job-applicant" {
-        interface JobApplicant
-        class JobApplicantController
+    package "com.jobpulse.jobapplicant" {
+        package controller {
+            class JobApplicantController {
+            }
+        }
+        package dto {
+            package request {
+                class JobPostsRequest
+                class JobPostApplicationsRequest
+                class UpdateAppliedJobStatusRequest
+            }
+            package response {
+                class ServiceResult<T> {}
+                class JobPostsResponse
+                class JobPostApplicationsResponse
+                class UpdateAppliedJobStatusResponse
+            }
+        }
+        package event {
+            class AppliedJobApplicationStausUpdate {
+                +jobPostId: UUID
+                +jobApplicantionId: UUID
+                +jobApplicantId: UUID
+                +updatedById: UUID
+            }
+            class AppliedJobApplicationDocumentUpdated {
+                +jobPostId: UUID
+                +jobApplicantionId: UUID
+                +jobApplicantId: UUID
+                +jobApplicationFileId: UUID
+                +updatedById: UUID
+            }
+        }
+        package repository {
+            interface JobApplicantRepository 
+        }
+        package service {
+            interface JobApplicantContract {
+                +getAppliedJobs(request: GetAppliedJobsRequest): ServiceResult<AppliedJobsResponse>
+                +editAppliedJobDocument(request: EditAppliedJobDocumentRequest): ServiceResult<EditAppliedJobDocumentResponse>
+                +updateAppliedJobStatus(request: UpdateAppliedJobStatusRequest): ServiceResult<UpdateAppliedJobStatusResponse>
+            }
+            class JobApplicantService implements JobApplicantContract {
+            }
+        }
+        JobApplicantController --> JobApplicantContract
+        JobApplicantContract <|.. JobApplicantService
+        JobApplicantService --> JobApplicantRepository
     }
 }
 note top of JobServicePackage
