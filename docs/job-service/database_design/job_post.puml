@@ -1,0 +1,124 @@
+package "JobPost" {
+    package Enum {            
+        enum JobPostStatus {
+            DRAFT
+            ACTIVE
+        }
+        enum RevisionStatus {
+            DRAFT
+            ACTIVE
+        }
+
+        enum UserRole {
+            ADMIN
+            JOB_POSTER
+            JOB_APPLICANT
+        }
+
+        enum SkeletonType {
+            DESCRIPTION_ONLY_SKELETON
+            DESCRIPTION_COMPANY_SKELETON
+            DESCRIPTION_PREREQUISITES_SKELETON
+            DESCRIPTION_COMPANY_PREREQUISITES_SKELETON
+        }
+    }
+    package Domain {
+        class JobPost {
+            +id: UUID
+            +title: String
+            +jobPosterId: UUID
+            +jobPostContentId: UUID
+            +status: JobPostStatus
+            +createdAt: LocalDateTime
+            +updatedAt: LocalDateTime
+        }
+
+        class JobPostContent {
+            +jobPostContentId: UUID
+            +jobPostSkeletonId: UUID
+            +revisionStatus: RevisionStatus
+            +createdAt: LocalDateTime
+            +updatedAt: LocalDateTime
+        }
+
+        class JobPostSkeleton {
+            +jobPostSkeletonId: UUID
+            +skeletonType: SkeletonType
+            +status: RevisionStatus
+            +createdAt: LocalDateTime
+            +updatedAt: LocalDateTime
+        }
+        note top of JobPostSkeleton
+        JobPostSkeleton can have any one of the available flavours
+        defined in Skeleton Types Relations at a time.
+        Flavour can change via versioning.
+        end note
+
+        package "Skeleton Types Relations" #DDDDDD {
+            class DESCRIPTION_ONLY_SKELETON {
+                +id: UUID
+                +jobPostDescriptionId: UUID
+                +createdAt: LocalDateTime
+                +updatedAt: LocalDateTime
+            }
+            class DESCRIPTION_COMPANY_SKELETON {
+                +id: UUID
+                +jobPostDescriptionId: UUID
+                +companyDetailsId: UUID
+                +createdAt: LocalDateTime
+                +updatedAt: LocalDateTime
+            }
+            class DESCRIPTION_PREREQUISITES_SKELETON {
+                +id: UUID
+                +jobPostDescriptionId: UUID
+                +jobPostPreRequisitesId: UUID
+                +createdAt: LocalDateTime
+                +updatedAt: LocalDateTime
+            }
+            class DESCRIPTION_COMPANY_PREREQUISITES_SKELETON {
+                +id: UUID
+                +jobPostDescriptionId: UUID
+                +companyDetailsId: UUID
+                +jobPostPreRequisitesId: UUID
+                +createdAt: LocalDateTime
+                +updatedAt: LocalDateTime
+            }
+            class JobPostDescription {
+                +jobPostDescriptionId: UUID
+                +description: String
+                +createdAt: LocalDateTime
+                +updatedAt: LocalDateTime
+            }
+            class CompanyDetails {
+                +companyDetailsId: UUID
+                +name: String
+                +tagline: String
+                +phone: Number
+                +createdAt: LocalDateTime
+                +updatedAt: LocalDateTime
+            }
+            class JobPostPreRequisites {
+                +jobPostPreRequisitesId: UUID
+                +createdAt: LocalDateTime
+                +updatedAt: LocalDateTime
+            }
+
+            DESCRIPTION_ONLY_SKELETON "1" -- "1" JobPostDescription 
+            DESCRIPTION_COMPANY_SKELETON "1" -- "1" JobPostDescription 
+            DESCRIPTION_COMPANY_SKELETON "1" -- "1" CompanyDetails 
+            DESCRIPTION_PREREQUISITES_SKELETON "1" -- "1" JobPostDescription 
+            DESCRIPTION_PREREQUISITES_SKELETON "1" -- "1" JobPostPreRequisites 
+            DESCRIPTION_COMPANY_PREREQUISITES_SKELETON "1" -- "1" JobPostDescription 
+            DESCRIPTION_COMPANY_PREREQUISITES_SKELETON "1" -- "1" CompanyDetails 
+            DESCRIPTION_COMPANY_PREREQUISITES_SKELETON "1" -- "1" JobPostPreRequisites 
+            }
+
+        JobPost "1" -- "1" JobPostContent
+        JobPostContent "1" -- "1--*" JobPostSkeleton
+
+        JobPostSkeleton "1" -- "0..1" DESCRIPTION_ONLY_SKELETON
+        JobPostSkeleton "1" -- "0..1" DESCRIPTION_COMPANY_SKELETON
+        JobPostSkeleton "1" -- "0..1" DESCRIPTION_PREREQUISITES_SKELETON
+        JobPostSkeleton "1" -- "0..1" DESCRIPTION_COMPANY_PREREQUISITES_SKELETON
+    }
+}
