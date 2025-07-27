@@ -90,8 +90,6 @@ A microservices-based job posting and application management system built with J
    ./start-observability.sh
    ```
 
-## 📋 API Documentation:** [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
-
 ## 📊 Monitoring & Observability
 
 **Metrics Collection:**
