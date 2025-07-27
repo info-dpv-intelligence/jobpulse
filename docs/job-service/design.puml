@@ -8,28 +8,80 @@ skinparam class {
 
 title JobPulse Job Service Architecture
 
-' package "Controllers" {
-'     class JobServiceController {
-'         -jobService: JobServiceContract
-'         +getJobListings(Pageable, Jwt): ResponseEntity<?>
-'         +createJob(CreateJobPostRequest, Jwt): ResponseEntity<?>
-'     }
-    
-'     class PingController {
-'         +ping(): String
-'         +protectedPing(): String
-'     }
-' }
+package JobServicePackage {
+    package "com.jobpulse.jobpostsandapply" {
+        package controller {
+            class JobPostAndApplyController {
+                +getJobListings(): ServiceResult<JobListingsPaginatedResponse>
+                +createJob(CreateJobPostRequest): ServiceResult<CreateJobPostResponse>
+                +applyJob(ApplyToJobRequest): ServiceResult<ApplyToJobResponse>
+            }
+        }
+        package dto {
+            package request {
+                class CreateJobPostRequest {
+
+                }
+                class ApplyToJobRequest {
+
+                }
+            }
+            package response {
+                class ServiceResult<T> {}
+                class CreateJobPostResponse
+                class ApplyToJobResponse
+                class JobListingsPaginatedResponse
+            }
+        }
+        package repository {
+            interface JobPostAndApplicationRepository {}
+        }
+        package service {
+            interface JobPostAndApplicationContract  {
+                +getJobListings(): ServiceResult<JobListingsPaginatedResponse>
+                +createJob(CreateJobPostRequest): ServiceResult<CreateJobPostResponse>
+                +applyJob(ApplyToJobRequest): ServiceResult<ApplyToJobResponse>
+            }
+            class JobPostAndApplicationService implements JobPostAndApplicationContract {
+
+            }
+        }
+
+        JobPostAndApplyController --> JobPostAndApplicationContract
+        JobPostAndApplicationContract --> JobPostAndApplicationRepository
+    }
+    package "job-poster" {
+        interface JobPoster
+        class JobPosterController
+    }
+    package "job-applicant" {
+        interface JobApplicant
+        class JobApplicantController
+    }
+}
+note top of JobServicePackage
+  The JobServicePackage currently hosts the following modules:
+    - job-posts-and-apply: handles job CRUD and applications
+    - job-poster: manages job posts and reviews applications
+    - job-applicant: manages applicant profiles and applications
+  Each module is independent, relies only on contracts, and can be deployed as a separate microservice for scalability.
+end note
+
+package "Controllers" {
+    class JobServiceJobPostController {
+
+    }
+}
 
 ' package "Services" {
 '     interface JobServiceContract {
-'         +getJobListings(Pageable): ServiceResult<JobListingsResponse>
+'         +getJobListings(Pageable): ServiceResult<JobListingsPaginatedResponse>
 '         +createJob(CreateJobPostCommand): ServiceResult<CreatedResponse>
 '     }
     
 '     class JobService {
 '         -jobPostRepository: JobPostRepository
-'         +getJobListings(Pageable): ServiceResult<JobListingsResponse>
+'         +getJobListings(Pageable): ServiceResult<JobListingsPaginatedResponse>
 '         +createJob(CreateJobPostCommand): ServiceResult<CreatedResponse>
 '     }
 ' }
@@ -263,11 +315,11 @@ package "JobApplicant" {
 '         +jobPosterId: UUID
 '     }
     
-'     class JobListingsResponse {
+'     class JobListingsPaginatedResponse {
 '         +jobs: List<JobPost>
 '         +totalElements: long
 '         +totalPages: int
-'         +{static} from(Page<JobPost>): JobListingsResponse
+'         +{static} from(Page<JobPost>): JobListingsPaginatedResponse
 '     }
     
 '     class CreatedResponse {
@@ -300,7 +352,7 @@ package "JobApplicant" {
 
 ' JobServiceController --> CreateJobPostRequest : receives
 ' JobService --> CreateJobPostCommand : uses
-' JobService --> "ServiceResult<JobListingsResponse>" : returns
+' JobService --> "ServiceResult<JobListingsPaginatedResponse>" : returns
 ' JobService --> "ServiceResult<CreatedResponse>" : returns
 
 ' JobPost --> ApplicationStatus : references
