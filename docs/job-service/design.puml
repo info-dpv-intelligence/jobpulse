@@ -14,23 +14,63 @@ package JobServicePackage {
             class JobPostAndApplyController {}
         }
         package dto {
+            package repository {
+                package command {
+                    class CreateJobPostCommand
+                }
+                package response {
+                    class OperationResult<T> {
+
+                    }
+                    class CreateJobPostResponse 
+                }
+
+            }
             package request {
-                class CreateJobPostRequest {
-
-                }
-                class ApplyToJobRequest {
-
-                }
+                class CreateJobPostRequests
+                class ApplyToJobRequest
             }
             package response {
-                class ServiceResult<T> {}
+                class ServiceResult<T> {
+                    -success: boolean
+                    -data: T
+                    -errorMessage: String
+                    -errorCode: String
+                    +{static} success(T): ServiceResult<T>
+                    +{static} failure(String, String): ServiceResult<T>
+                    +isSuccess(): boolean
+                    +isFailure(): boolean
+                }
                 class CreateJobPostResponse
                 class ApplyToJobResponse
                 class JobListingsResponse
             }
         }
+        package enum {
+            enum ApplicationDocumentType {
+                RESUME
+                COVER
+                OTHER
+            }
+        }
+        package event {
+            class JobApplicantSentEvent {
+                +jobApplicationId: UUID
+                +jobPostId: UUID
+                +jobApplicantId: UUID
+                +createdAt: LocalDateTime
+                +updatedById: UUID
+            }
+            class JobPostCreatedEvent {
+                +jobPostId: UUID
+                +createdAt: LocalDateTime
+                +updatedById: UUID
+            }
+        }
         package repository {
-            interface JobPostAndApplicationRepository {}
+            interface JobPostAndApplicationRepository {
+                +createJobPost(CreateJobPostCommand command): OperationResult<CreateJobPostResponse>;
+            }
         }
         package service {
             interface JobPostAndApplicationContract  {
@@ -52,19 +92,35 @@ package JobServicePackage {
             class JobPosterController {
             }
         }
+        package enum {
+            enum ActiveJobPostStatusUpdate {
+                FILLED
+                HOLD
+                CLOSE
+            }
+        }
         package dto {
             package request {
                 class JobPostsRequest
                 class JobPostApplicationsRequest
             }
             package response {
-                class ServiceResult<T> {}
+                class ServiceResult<T> {
+                    -success: boolean
+                    -data: T
+                    -errorMessage: String
+                    -errorCode: String
+                    +{static} success(T): ServiceResult<T>
+                    +{static} failure(String, String): ServiceResult<T>
+                    +isSuccess(): boolean
+                    +isFailure(): boolean
+                }
                 class JobPostsResponse
                 class JobPostApplicationsResponse
             }
         }
         package event {
-            class JobPostStausUpdate {
+            class JobPostStausUpdateEvent {
                 +jobPostId: UUID
                 +jobApplicantionId: UUID
                 +jobApplicantId: UUID
@@ -99,20 +155,29 @@ package JobServicePackage {
                 class UpdateAppliedJobStatusRequest
             }
             package response {
-                class ServiceResult<T> {}
+                class ServiceResult<T> {
+                    -success: boolean
+                    -data: T
+                    -errorMessage: String
+                    -errorCode: String
+                    +{static} success(T): ServiceResult<T>
+                    +{static} failure(String, String): ServiceResult<T>
+                    +isSuccess(): boolean
+                    +isFailure(): boolean
+                }
                 class JobPostsResponse
                 class JobPostApplicationsResponse
                 class UpdateAppliedJobStatusResponse
             }
         }
         package event {
-            class AppliedJobApplicationStausUpdate {
+            class AppliedJobApplicationStausUpdateEvent {
                 +jobPostId: UUID
                 +jobApplicantionId: UUID
                 +jobApplicantId: UUID
                 +updatedById: UUID
             }
-            class AppliedJobApplicationDocumentUpdated {
+            class AppliedJobApplicationDocumentUpdatedEvent {
                 +jobPostId: UUID
                 +jobApplicantionId: UUID
                 +jobApplicantId: UUID
@@ -144,269 +209,4 @@ note top of JobServicePackage
     - job-applicant: manages applicant profiles and applications
   Each module is independent, relies only on contracts, and can be deployed as a separate microservice for scalability.
 end note
-
-
-package "JobPoster" {
-    package Enum {            
-        enum JobPostStatus {
-            DRAFT
-            ACTIVE
-            FILLED
-            WITHDRAWN
-        }
-        enum RevisionStatus {
-            DRAFT
-            ACTIVE
-        }
-
-        enum UserRole {
-            ADMIN
-            JOB_POSTER
-            JOB_APPLICANT
-        }
-        enum SkeletonType {
-            DESCRIPTION_ONLY_SKELETON
-            DESCRIPTION_COMPANY_SKELETON
-            DESCRIPTION_PREREQUISITES_SKELETON
-            DESCRIPTION_COMPANY_PREREQUISITES_SKELETON
-        }
-    }
-    package Domain {
-        class JobPost {
-            +id: UUID
-            +title: String
-            +jobPosterId: UUID
-            +jobPostContentId: UUID
-            +status: JobPostStatus
-            +createdAt: LocalDateTime
-            +updatedAt: LocalDateTime
-        }
-
-        class JobPostContent {
-            +jobPostContentId: UUID
-            +jobPostSkeletonId: UUID
-            +revisionStatus: RevisionStatus
-            +createdAt: LocalDateTime
-            +updatedAt: LocalDateTime
-        }
-
-        class JobPostSkeleton {
-            +jobPostSkeletonId: UUID
-            +skeletonType: SkeletonType
-            +status: RevisionStatus
-            +createdAt: LocalDateTime
-            +updatedAt: LocalDateTime
-        }
-        note top of JobPostSkeleton
-        JobPostSkeleton can have any one of the available flavours
-        defined in Skeleton Types Relations at a time.
-        Flavour can change via versioning.
-        end note
-
-        package "Skeleton Types Relations" #DDDDDD {
-            class DESCRIPTION_ONLY_SKELETON {
-                +id: UUID
-                +jobPostDescriptionId: UUID
-                +createdAt: LocalDateTime
-                +updatedAt: LocalDateTime
-            }
-            class DESCRIPTION_COMPANY_SKELETON {
-                +id: UUID
-                +jobPostDescriptionId: UUID
-                +companyDetailsId: UUID
-                +createdAt: LocalDateTime
-                +updatedAt: LocalDateTime
-            }
-            class DESCRIPTION_PREREQUISITES_SKELETON {
-                +id: UUID
-                +jobPostDescriptionId: UUID
-                +jobPostPreRequisitesId: UUID
-                +createdAt: LocalDateTime
-                +updatedAt: LocalDateTime
-            }
-            class DESCRIPTION_COMPANY_PREREQUISITES_SKELETON {
-                +id: UUID
-                +jobPostDescriptionId: UUID
-                +companyDetailsId: UUID
-                +jobPostPreRequisitesId: UUID
-                +createdAt: LocalDateTime
-                +updatedAt: LocalDateTime
-            }
-            class JobPostDescription {
-                +jobPostDescriptionId: UUID
-                +description: String
-                +createdAt: LocalDateTime
-                +updatedAt: LocalDateTime
-            }
-            class CompanyDetails {
-                +companyDetailsId: UUID
-                +name: String
-                +tagline: String
-                +phone: Number
-                +createdAt: LocalDateTime
-                +updatedAt: LocalDateTime
-            }
-            class JobPostPreRequisites {
-                +jobPostPreRequisitesId: UUID
-                +createdAt: LocalDateTime
-                +updatedAt: LocalDateTime
-            }
-
-            DESCRIPTION_ONLY_SKELETON "1" -- "1" JobPostDescription 
-            DESCRIPTION_COMPANY_SKELETON "1" -- "1" JobPostDescription 
-            DESCRIPTION_COMPANY_SKELETON "1" -- "1" CompanyDetails 
-            DESCRIPTION_PREREQUISITES_SKELETON "1" -- "1" JobPostDescription 
-            DESCRIPTION_PREREQUISITES_SKELETON "1" -- "1" JobPostPreRequisites 
-            DESCRIPTION_COMPANY_PREREQUISITES_SKELETON "1" -- "1" JobPostDescription 
-            DESCRIPTION_COMPANY_PREREQUISITES_SKELETON "1" -- "1" CompanyDetails 
-            DESCRIPTION_COMPANY_PREREQUISITES_SKELETON "1" -- "1" JobPostPreRequisites 
-            }
-
-        JobPost "1" -- "1" JobPostContent
-        JobPostContent "1" -- "1--*" JobPostSkeleton
-
-        JobPostSkeleton "1" -- "0..1" DESCRIPTION_ONLY_SKELETON
-        JobPostSkeleton "1" -- "0..1" DESCRIPTION_COMPANY_SKELETON
-        JobPostSkeleton "1" -- "0..1" DESCRIPTION_PREREQUISITES_SKELETON
-        JobPostSkeleton "1" -- "0..1" DESCRIPTION_COMPANY_PREREQUISITES_SKELETON
-    }
-}
-package "JobApplicant" {
-    package Enum {
-        enum ApplicationDocumentType {
-            RESUME
-            COVER
-            OTHER
-        }
-        enum ApplicationStatus {
-            APPLIED
-            IN_REVIEW
-            REJECTED
-            SHORTLISTED
-            ONBOARDED
-        }
-    }
-    package Event {
-        class JobApplicantSentEvent {
-            +jobApplicationId: UUID
-            +jobPostId: UUID
-            +jobApplicantId: UUID
-            +createdAt: LocalDateTime
-        }
-    }
-    package Domain {
-        class JobApplication {
-            +jobApplicationId: UUID
-            +jobPostId: UUID
-            +jobApplicantId: UUID
-            +status: ApplicationStatus
-            +createdAt: LocalDateTime
-            +updatedAt: LocalDateTime
-        }
-        class JobApplicationFileMapping {
-            +jobApplicationDocumentId: UUID
-            +jobPostId: UUID
-            +jobApplicationFileId: UUID
-            +jobApplicationId: UUID
-            +createdAt: LocalDateTime
-            +updatedAt: LocalDateTime
-        }
-
-        note top of JobApplicationFileMapping
-        Acts as a join table between JobApplication and JobApplicationFile.
-        Allows many-to-many relationship: an application can have multiple files,
-        and a file can be used in multiple applications.
-        Indexes:
-            - (jobPostId, jobApplicationId)
-            - createdAt
-        Partitioning: by createdAt (range, typically 3-week intervals)
-        end note
-        class JobApplicationFile {
-            +jobApplicationFileId: UUID
-            +fileName: String
-            +fileType: ApplicationDocumentType
-            +createdAt: LocalDateTime
-            +uploadedAt: LocalDateTime
-        }
-
-        JobApplication "1" -- "0..*" JobApplicationFileMapping
-        JobApplicationFileMapping "1" -- "0..*" JobApplicationFile
-    }
-    JobPost "1" -- "0..*" JobApplication
-}
-
-' package "DTOs" {
-'     class "ServiceResult<T>" {
-'         -success: boolean
-'         -data: T
-'         -errorMessage: String
-'         -errorCode: String
-'         +{static} success(T): ServiceResult<T>
-'         +{static} failure(String, String): ServiceResult<T>
-'         +isSuccess(): boolean
-'         +isFailure(): boolean
-'     }
-    
-'     class CreateJobPostRequest {
-'         +title: String
-'         +description: String
-'     }
-    
-'     class CreateJobPostCommand {
-'         +title: String
-'         +description: String
-'         +jobPosterId: UUID
-'     }
-    
-'     class JobListingsResponse {
-'         +jobs: List<JobPost>
-'         +totalElements: long
-'         +totalPages: int
-'         +{static} from(Page<JobPost>): JobListingsResponse
-'     }
-    
-'     class CreatedResponse {
-'         +id: String
-'         +message: String
-'     }
-    
-'     class UserContext {
-'         +userId: UUID
-'         +role: UserRole
-'         +email: String
-'     }
-' }
-
-' package "Configuration" {
-'     class SecurityConfig {
-'         +filterChain(HttpSecurity): SecurityFilterChain
-'         +jwtAuthenticationConverter(): JwtAuthenticationConverter
-'     }
-    
-'     class OpenApiConfig {
-'         +openAPI(): OpenAPI
-'     }
-' }
-
-
-' JobServiceController --> JobServiceContract : uses
-' JobService ..|> JobServiceContract : implements
-' JobService --> JobPostRepository : uses
-
-' JobServiceController --> CreateJobPostRequest : receives
-' JobService --> CreateJobPostCommand : uses
-' JobService --> "ServiceResult<JobListingsResponse>" : returns
-' JobService --> "ServiceResult<CreatedResponse>" : returns
-
-' JobPost --> ApplicationStatus : references
-' JobApplication --> ApplicationStatus : has
-' ApplicationFiles --> ApplicationFileType : has
-
-' JobPost "1" -- "0..*" JobApplication : has
-' JobApplication "1" -- "0..*" ApplicationFiles : contains
-
-' JobPostRepository --> JobPost : manages
-' JobApplicationRepository --> JobApplication : manages  
-' ApplicationFilesRepository --> ApplicationFiles : manages
-
 @enduml
