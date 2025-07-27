@@ -43,7 +43,7 @@ A microservices-based job posting and application management system built with J
      - User registration and login with JWT tokens
      - Role-based access control (RBAC)
    - **job-service**: (In progress 🚧)
-      - **job-creation-listing**: Issue link (https://github.com/info-dpv-intelligence/jobpulse/issues/7#issue-3267027960)
+      - **job-creation-listing**: (Issue link: https://github.com/info-dpv-intelligence/jobpulse/issues/7)
          - Retrieve available job postings.
          - Create a new job post in the system.
       - **job-poster**:
