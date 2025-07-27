@@ -14,16 +14,16 @@ A microservices-based job posting and application management system built with J
 ## Architecture
 
 **Microservices:**
-- `auth-service` (8080):
+- `auth-service`:
    _Handles user registration, login, and JWT token issuance with embedded roles. Each microservice enforces role-based access control by validating roles from the token._
-- `job-service` (8081):
+- `job-service`:
    - **job-creation-listing**:
       _Handles job listings, job creation. Responsible for exposing job opportunities to users._
    - **job-poster**
       _Manages job posts from the perspective of the poster. Enables reviewing, updating, and managing applications submitted for owned job posts._
    - **job-seeker**
       _Manages job applications (includes updating submitted documents, status)._
-- `alert-worker` (8083):
+- `alert-worker`:
    _Handles alerts and notifications (pending)_
 
 ## Architecture Documentation
