@@ -175,34 +175,69 @@ package "JobPoster" {
         JobPostSkeleton "1" -- "0..1" DESCRIPTION_PREREQUISITES_SKELETON
         JobPostSkeleton "1" -- "0..1" DESCRIPTION_COMPANY_PREREQUISITES_SKELETON
     }
-    ' class JobApplication {
-    '     +id: UUID
-    '     +jobPostId: UUID
-    '     +jobApplicantId: UUID
-    '     +status: ApplicationStatus
-    '     +appliedAt: LocalDateTime
-    '     +updatedAt: LocalDateTime
-    ' }
-    
-    ' class ApplicationFiles {
-    '     +id: UUID
-    '     +jobApplicationId: UUID
-    '     +fileName: String
-    '     +fileType: ApplicationFileType
-    '     +uploadedAt: LocalDateTime
-    ' }
-    
-    ' enum ApplicationStatus {
-    '     APPLIED
-    '     REVIEWED
-    '     REJECTED
-    ' }
-    
-    ' enum ApplicationFileType {
-    '     RESUME
-    '     COVER
-    '     OTHER
-    ' }
+}
+package "JobApplicant" {
+    package Enum {
+        enum ApplicationDocumentType {
+            RESUME
+            COVER
+            OTHER
+        }
+        enum ApplicationStatus {
+            APPLIED
+            IN_REVIEW
+            REJECTED
+            SHORTLISTED
+            ONBOARDED
+        }
+    }
+    package Event {
+        class JobApplicantSentEvent {
+            +jobApplicationId: UUID
+            +jobPostId: UUID
+            +jobApplicantId: UUID
+            +createdAt: LocalDateTime
+        }
+    }
+    package Domain {
+        class JobApplication {
+            +jobApplicationId: UUID
+            +jobPostId: UUID
+            +jobApplicantId: UUID
+            +status: ApplicationStatus
+            +createdAt: LocalDateTime
+            +updatedAt: LocalDateTime
+        }
+        class JobApplicationFileMapping {
+            +jobApplicationDocumentId: UUID
+            +jobPostId: UUID
+            +jobApplicationFileId: UUID
+            +jobApplicationId: UUID
+            +createdAt: LocalDateTime
+            +updatedAt: LocalDateTime
+        }
+
+        note top of JobApplicationFileMapping
+        Acts as a join table between JobApplication and JobApplicationFile.
+        Allows many-to-many relationship: an application can have multiple files,
+        and a file can be used in multiple applications.
+        Indexes:
+            - (jobPostId, jobApplicationId)
+            - createdAt
+        Partitioning: by createdAt (range, typically 3-week intervals)
+        end note
+        class JobApplicationFile {
+            +jobApplicationFileId: UUID
+            +fileName: String
+            +fileType: ApplicationDocumentType
+            +createdAt: LocalDateTime
+            +uploadedAt: LocalDateTime
+        }
+
+        JobApplication "1" -- "0..*" JobApplicationFileMapping
+        JobApplicationFileMapping "1" -- "0..*" JobApplicationFile
+    }
+    JobPost "1" -- "0..*" JobApplication
 }
 
 ' package "DTOs" {
