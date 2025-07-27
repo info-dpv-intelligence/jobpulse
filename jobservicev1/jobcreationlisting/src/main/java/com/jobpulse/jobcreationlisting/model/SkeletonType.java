@@ -1,0 +1,8 @@
+package com.jobpulse.jobcreationlisting.model;
+
+public enum SkeletonType {
+    DESCRIPTION_ONLY_SKELETON,
+    DESCRIPTION_COMPANY_SKELETON,
+    DESCRIPTION_PREREQUISITES_SKELETON,
+    DESCRIPTION_COMPANY_PREREQUISITES_SKELETON
+}
