@@ -33,6 +33,14 @@ package "JobPost" {
             +updatedAt: LocalDateTime
         }
 
+        class JobPostContentV1 {
+            +jobPostContentId: UUID
+            +description: String
+            +companyDetailsId: UUID
+            +createdAt: LocalDateTime
+            +updatedAt: LocalDateTime
+        }
+
         class JobPostContent {
             +jobPostContentId: UUID
             +jobPostSkeletonId: UUID
@@ -43,12 +51,13 @@ package "JobPost" {
 
         class JobPostSkeleton {
             +jobPostSkeletonId: UUID
-            +skeletonType: SkeletonType
+            +description
             +status: RevisionStatus
             +createdAt: LocalDateTime
             +updatedAt: LocalDateTime
         }
         note top of JobPostSkeleton
+        Lets mark this path as "Just for fun"
         JobPostSkeleton can have any one of the available flavours
         defined in Skeleton Types Relations at a time.
         Flavour can change via versioning.
