@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class CreateJobPostContentV1Command {
     private String description;
-    private UUID companyDetailsId; // Can be null
+    private UUID companyDetailsId;
     private RevisionStatus revisionStatus;
 }
 

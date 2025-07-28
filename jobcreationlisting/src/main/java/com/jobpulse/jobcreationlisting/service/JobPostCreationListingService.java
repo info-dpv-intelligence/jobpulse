@@ -1,7 +1,6 @@
 package com.jobpulse.jobcreationlisting.service;
 
 import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostRequest;
-import com.jobpulse.jobcreationlisting.dto.request.CompanyDetailsRequest;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCompanyDetailsCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostContentV1Command;
@@ -27,7 +26,6 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
 
     private final JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp;
 
-
     @Autowired
     public JobPostCreationListingService(
         JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp
@@ -39,35 +37,35 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
     @Transactional
     public ServiceResult<JobPostCreatedAggregateResponse> createJobPost(CreateJobPostRequest request) {
         // 1. Create JobPostCompanyDetails
-        UUID companyDetailsId = null;
-        CompanyDetailsRequest cdReq = request.getCompanyDetails();
-
-        companyDetailsId = Optional.ofNullable(cdReq.getCompanyDetailsId())
+        UUID companyDetailsId = Optional.ofNullable(request.getCompanyDetails())
+            .map(cd -> Optional.ofNullable(cd.getCompanyDetailsId())
             .map(id -> {
                         boolean exists = jobPostCreationListingRepositoryImp
                         .findCompanyDetailsById(id)
                         .isPresent();
                     if (!exists) {
+                        // logger.error("Company details not found for id: {}", id);
                         throw new EntityNotFoundException("Company details not found");
                     }
-
-                return id;
-            })
-            .orElseGet(() -> {
-                try {
-                    CreateJobPostCompanyResponse createJobPostCompanyResponse = jobPostCreationListingRepositoryImp.createJobPostCompany(
-                        CreateJobPostCompanyDetailsCommand.builder()
-                            .name(cdReq.getName())
-                            .tagline(cdReq.getTagline())
-                            .phone(cdReq.getPhone())
-                            .build()
-                        ).getData();
-                    return createJobPostCompanyResponse.getJobPostCompanyId();
-                } catch (Exception e) {
-                    //logger
-                    throw new RuntimeException(e);
-                }
-            });
+                    return id;
+                })
+                .orElseGet(() -> {
+                    try {
+                        CreateJobPostCompanyResponse createJobPostCompanyResponse = jobPostCreationListingRepositoryImp.createJobPostCompany(
+                            CreateJobPostCompanyDetailsCommand.builder()
+                                .name(cd.getName())
+                                .tagline(cd.getTagline())
+                                .phone(cd.getPhone())
+                                .build()
+                            ).getData();
+                        return createJobPostCompanyResponse.getJobPostCompanyId();
+                    } catch (Exception e) {
+                        // logger.error("Error creating company details", e);
+                        throw new RuntimeException(e);
+                    }
+                })
+            )
+            .orElse(null);
 
         // 2. Create JobPostContent
         UUID jobPostContentId = null;
@@ -79,7 +77,8 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
         try {
             jobPostContentId = jobPostCreationListingRepositoryImp.createJobPostContent(contentCommand).getData().getJobPostContentId();
         } catch (Exception e) {
-            //
+            // logger.error("Error creating job post content", e);
+            throw new RuntimeException(e);
         }
 
         // 3. Create JobPostCommand
@@ -101,7 +100,7 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
                 .build()
             );
         } catch (Exception e) {
-            // introduce logger
+            // logger
             return ServiceResult.failure(e.getMessage());
         }
     }

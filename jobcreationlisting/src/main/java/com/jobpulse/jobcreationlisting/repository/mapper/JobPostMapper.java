@@ -11,11 +11,9 @@ public interface JobPostMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "title", target = "title")
     @Mapping(source = "jobPosterId", target = "jobPosterId")
-    @Mapping(source = "jobPostContentId", target = "jobPostContent.jobPostContentId")
+    @Mapping(target = "jobPostContent", ignore = true)
     @Mapping(source = "status", target = "status", defaultExpression = "java(com.jobpulse.jobcreationlisting.model.JobPostStatus.DRAFT.toString())")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "jobPostContent.createdAt", ignore = true)
-    @Mapping(target = "jobPostContent.updatedAt", ignore = true)
     JobPost toEntity(CreateJobPostCommand request);
 }

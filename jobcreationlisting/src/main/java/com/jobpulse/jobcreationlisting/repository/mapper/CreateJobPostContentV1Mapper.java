@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 public interface CreateJobPostContentV1Mapper {
     @Mapping(target = "jobPostContentId", ignore = true)
     @Mapping(source = "description", target = "description")
-    @Mapping(source = "companyDetailsId", target = "companyDetails.companyDetailsId")
+    @Mapping(target =  "companyDetails", ignore = true)
     @Mapping(target = "revisionStatus", source = "revisionStatus", defaultExpression = "java(com.jobpulse.jobcreationlisting.model.RevisionStatus.DRAFT.toString())")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

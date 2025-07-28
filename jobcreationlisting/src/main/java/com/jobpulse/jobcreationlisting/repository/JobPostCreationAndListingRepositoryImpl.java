@@ -68,26 +68,35 @@ public class JobPostCreationAndListingRepositoryImpl implements JobPostCreationA
 
     @Override
     public OperationResult<CreateJobPostContentResponse> createJobPostContent(CreateJobPostContentV1Command command) {
-     
-        JobPostContentV1 jobPostContentV1 = jobPostContentV1Repository.save(createJobPostContentV1Mapper.toEntity(command));
+        JobPostContentV1 jobPostContentV1 = createJobPostContentV1Mapper.toEntity(command);
+        if (command.getCompanyDetailsId() != null) {
+            findCompanyDetailsById(command.getCompanyDetailsId())
+            .ifPresent(cd -> {
+                jobPostContentV1.setCompanyDetails(cd);
+            });
+        }
+        JobPostContentV1 saved = jobPostContentV1Repository.save(jobPostContentV1);
 
         return OperationResult.success(
             CreateJobPostContentResponse.builder()
-                .jobPostContentId(jobPostContentV1.getJobPostContentId())
+                .jobPostContentId(saved.getJobPostContentId())
                 .build()
         );
     }
 
     @Override
     public OperationResult<CreateJobPostResponse> createJobPost(CreateJobPostCommand command) {
+        JobPost jobPost = jobPostMapper.toEntity(command);
+        jobPostContentV1Repository.findById(command.getJobPostContentId())
+        .ifPresent(jpc ->{
+            jobPost.setJobPostContent(jpc);
+        });
 
-        JobPost jobPost = jobPostRepository.save(
-            jobPostMapper.toEntity(command)
-        );
+        JobPost jobPostSaved = jobPostRepository.save(jobPost);
 
         return OperationResult.success(
             CreateJobPostResponse.builder()
-                .jobPostId(jobPost.getId())
+                .jobPostId(jobPostSaved.getId())
                 .build()
         );
     }
