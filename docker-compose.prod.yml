@@ -70,12 +70,12 @@ services:
       - "8089:8080"
     restart: unless-stopped
 
-  job-service:
+  jobcreationlisting:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: job-service
+        SERVICE_NAME: jobcreationlisting
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - JWT_SECRET=${JWT_SECRET}
@@ -83,7 +83,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=jobuser
       - SPRING_DATASOURCE_PASSWORD=${JOB_DB_PASSWORD}
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_CONSUMER_GROUP=job-service-group
+      - KAFKA_CONSUMER_GROUP=jobcreationlisting-group
       - USER_EVENTS_TOPIC=user.events
       # OpenAPI Configuration for Production
       - OPENAPI_PROD_URL=http://16.171.9.26:8084

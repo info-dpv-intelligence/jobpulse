@@ -133,6 +133,12 @@ full-down:
 	@echo "$(GREEN)✅ Complete $(ENV) environment stopped$(NC)"
 
 # Utility commands
+jobcreationlisting-build-cp:
+	@./gradlew jobcreationlisting:clean
+	@./gradlew jobcreationlisting:build --refresh-dependencies -x test
+	@docker cp jobcreationlisting/build/libs/jobcreationlisting-0.0.1-SNAPSHOT.jar jobcreationlisting:/app/app.jar
+	@docker restart jobcreationlisting
+	
 build:
 	@echo "$(BLUE)🔨 Building $(ENV) images...$(NC)"
 	@echo "$(YELLOW)🧹 Cleaning old project images...$(NC)"

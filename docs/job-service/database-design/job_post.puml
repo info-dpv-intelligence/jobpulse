@@ -27,7 +27,7 @@ package "JobPost" {
             +id: UUID
             +title: String
             +jobPosterId: UUID
-            +jobPostContentId: UUID
+            +jobPostContent: JobPostContentV1
             +status: JobPostStatus
             +createdAt: LocalDateTime
             +updatedAt: LocalDateTime
@@ -36,7 +36,7 @@ package "JobPost" {
         class JobPostContentV1 {
             +jobPostContentId: UUID
             +description: String
-            +companyDetailsId: UUID
+            +companyDetails: CompanyDetails
             +createdAt: LocalDateTime
             +updatedAt: LocalDateTime
         }
@@ -122,7 +122,9 @@ package "JobPost" {
             DESCRIPTION_COMPANY_PREREQUISITES_SKELETON "1" -- "1" JobPostPreRequisites 
             }
 
-        JobPost "1" -- "1" JobPostContent
+        JobPost "1" -- "1" JobPostContentV1
+        JobPostContentV1 "0..1" -- "1" CompanyDetails
+
         JobPostContent "1" -- "1--*" JobPostSkeleton
 
         JobPostSkeleton "1" -- "0..1" DESCRIPTION_ONLY_SKELETON

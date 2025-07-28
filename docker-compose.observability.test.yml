@@ -83,7 +83,7 @@ services:
         echo 'Starting load generation for test environment...';
         while true; do
           curl -s http://auth-service:8080/actuator/health || true;
-          curl -s http://job-service:8080/actuator/health || true;
+          curl -s http://jobcreationlisting:8080/actuator/health || true;
           sleep 5;
         done
       "
