@@ -29,12 +29,12 @@ services:
       - "8080:8080"
     restart: on-failure
 
-  job-service:
+  jobcreationlisting:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: job-service
+        SERVICE_NAME: jobcreationlisting
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://job-db:5432/jobdb
@@ -42,7 +42,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=jobpass
       - JWT_SECRET=your-dev-secret-your-dev-secret-your-dev-secret-your-dev-secret
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_CONSUMER_GROUP=job-service-group
+      - KAFKA_CONSUMER_GROUP=jobcreationlisting-group
       - USER_EVENTS_TOPIC=user.events
       # OpenAPI Configuration for Development
       - OPENAPI_DEV_URL=http://localhost:8081
