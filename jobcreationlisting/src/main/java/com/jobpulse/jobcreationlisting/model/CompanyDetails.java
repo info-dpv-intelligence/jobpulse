@@ -1,21 +1,28 @@
 package com.jobpulse.jobcreationlisting.model;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
-import jakarta.annotation.Generated;
 import jakarta.persistence.Column;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.util.UUID;
 import java.time.ZonedDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "company_details")
 public class CompanyDetails {
     @Id
@@ -32,9 +39,11 @@ public class CompanyDetails {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "created_at", nullable = false)
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
     private ZonedDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 }

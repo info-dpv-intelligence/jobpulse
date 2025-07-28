@@ -4,18 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.UUID;
 
-import com.jobpulse.jobcreationlisting.model.JobPostStatus;
+import org.springframework.lang.Nullable;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateJobPostCommand {
-    private String title;
-    private UUID jobPosterId;
-    private UUID jobPostContentId;
-    private JobPostStatus status;
+public class CreateJobPostCompanyDetailsCommand {
+    @Nullable
+    private UUID companyDetailsId;
+    private String name;
+    private String tagline;
+    private String phone;
 }

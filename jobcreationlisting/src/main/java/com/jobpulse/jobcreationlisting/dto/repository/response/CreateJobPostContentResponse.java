@@ -11,6 +11,6 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateJobPostResponse {
-    private UUID jobPostId;
+public class CreateJobPostContentResponse {
+    private UUID jobPostContentId;
 }

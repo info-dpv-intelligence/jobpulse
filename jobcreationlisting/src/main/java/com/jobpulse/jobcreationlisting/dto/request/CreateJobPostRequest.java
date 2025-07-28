@@ -1,14 +1,16 @@
 package com.jobpulse.jobcreationlisting.dto.request;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-@Setter
+@AllArgsConstructor
+@Builder
 public class CreateJobPostRequest {
     private UUID jobPosterId;
     private String title;

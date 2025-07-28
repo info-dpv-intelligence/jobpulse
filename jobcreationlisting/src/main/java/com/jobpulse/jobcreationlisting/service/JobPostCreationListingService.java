@@ -2,72 +2,107 @@ package com.jobpulse.jobcreationlisting.service;
 
 import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostRequest;
 import com.jobpulse.jobcreationlisting.dto.request.CompanyDetailsRequest;
+import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCommand;
+import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCompanyDetailsCommand;
+import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostContentV1Command;
+import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostCompanyResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostResponse;
+import com.jobpulse.jobcreationlisting.dto.repository.response.OperationResult;
+import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
 import com.jobpulse.jobcreationlisting.dto.response.ServiceResult;
 import com.jobpulse.jobcreationlisting.model.*;
 import com.jobpulse.jobcreationlisting.repository.*;
+
+import jakarta.persistence.EntityNotFoundException;
+
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.ZonedDateTime;
-import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class JobPostCreationListingService implements JobPostCreationListingContract {
 
-    private final CompanyDetailsRepository companyDetailsRepository;
-    private final JobPostContentV1Repository jobPostContentV1Repository;
-    private final JobPostRepository jobPostRepository;
+    private final JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp;
+
 
     @Autowired
     public JobPostCreationListingService(
-            CompanyDetailsRepository companyDetailsRepository,
-            JobPostContentV1Repository jobPostContentV1Repository,
-            JobPostRepository jobPostRepository
+        JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp
     ) {
-        this.companyDetailsRepository = companyDetailsRepository;
-        this.jobPostContentV1Repository = jobPostContentV1Repository;
-        this.jobPostRepository = jobPostRepository;
+        this.jobPostCreationListingRepositoryImp = jobPostCreationListingRepositoryImp;
     }
 
     @Override
-    public ServiceResult<CreateJobPostResponse> createJobPost(CreateJobPostRequest request) {
-        ZonedDateTime now = ZonedDateTime.now();
+    @Transactional
+    public ServiceResult<JobPostCreatedAggregateResponse> createJobPost(CreateJobPostRequest request) {
+        // 1. Create JobPostCompanyDetails
+        UUID companyDetailsId = null;
+        CompanyDetailsRequest cdReq = request.getCompanyDetails();
 
-        // 1. Handle optional company details
-        CompanyDetails companyDetails = null;
-        if (request.getCompanyDetails() != null) {
-            CompanyDetailsRequest cdReq = request.getCompanyDetails();
-            companyDetails = new CompanyDetails();
-            companyDetails.setName(cdReq.getName());
-            companyDetails.setTagline(cdReq.getTagline());
-            companyDetails.setPhone(cdReq.getPhone());
-            companyDetails.setCreatedAt(now);
-            companyDetails.setUpdatedAt(now);
-            companyDetails = companyDetailsRepository.save(companyDetails);
+        companyDetailsId = Optional.ofNullable(cdReq.getCompanyDetailsId())
+            .map(id -> {
+                        boolean exists = jobPostCreationListingRepositoryImp
+                        .findCompanyDetailsById(id)
+                        .isPresent();
+                    if (!exists) {
+                        throw new EntityNotFoundException("Company details not found");
+                    }
+
+                return id;
+            })
+            .orElseGet(() -> {
+                try {
+                    CreateJobPostCompanyResponse createJobPostCompanyResponse = jobPostCreationListingRepositoryImp.createJobPostCompany(
+                        CreateJobPostCompanyDetailsCommand.builder()
+                            .name(cdReq.getName())
+                            .tagline(cdReq.getTagline())
+                            .phone(cdReq.getPhone())
+                            .build()
+                        ).getData();
+                    return createJobPostCompanyResponse.getJobPostCompanyId();
+                } catch (Exception e) {
+                    //logger
+                    throw new RuntimeException(e);
+                }
+            });
+
+        // 2. Create JobPostContent
+        UUID jobPostContentId = null;
+        CreateJobPostContentV1Command contentCommand = CreateJobPostContentV1Command.builder()
+                .description(request.getJobPostDescription().getDescription())
+                .companyDetailsId(companyDetailsId)
+                .revisionStatus(RevisionStatus.DRAFT)
+                .build();
+        try {
+            jobPostContentId = jobPostCreationListingRepositoryImp.createJobPostContent(contentCommand).getData().getJobPostContentId();
+        } catch (Exception e) {
+            //
         }
 
-        // 2. Create JobPostContentV1
-        JobPostContentV1 content = new JobPostContentV1();
-        content.setDescription(request.getJobPostDescription().getDescription());
-        content.setCompanyDetails(companyDetails);
-        content.setRevisionStatus(RevisionStatus.DRAFT.toString()); // or ACTIVE, as needed
-        content.setCreatedAt(now);
-        content.setUpdatedAt(now);
-        content = jobPostContentV1Repository.save(content);
+        // 3. Create JobPostCommand
+        CreateJobPostCommand createJobPostCommand = CreateJobPostCommand.builder()
+                .title(request.getTitle())
+                .jobPosterId(request.getJobPosterId())
+                .jobPostContentId(jobPostContentId)
+                .status(JobPostStatus.DRAFT)
+                .build();
 
-        // 3. Create JobPost
-        JobPost jobPost = new JobPost();
-        jobPost.setTitle(request.getTitle());
-        jobPost.setJobPosterId(request.getJobPosterId());
-        jobPost.setJobPostContent(content);
-        jobPost.setStatus(JobPostStatus.DRAFT.toString()); // or ACTIVE, as needed
-        jobPost.setCreatedAt(now);
-        jobPost.setUpdatedAt(now);
-        jobPost = jobPostRepository.save(jobPost);
+        try {
+            OperationResult<CreateJobPostResponse> createJobPostResponse = jobPostCreationListingRepositoryImp.createJobPost(createJobPostCommand);
 
-        // 4. Build response
-        CreateJobPostResponse response = new CreateJobPostResponse(jobPost.getId());
-        return ServiceResult.success(response);
+            return ServiceResult.success(
+                JobPostCreatedAggregateResponse.builder()
+                .jobPostId(createJobPostResponse.getData().getJobPostId())
+                .jobPostContentId(jobPostContentId)
+                .companyDetailsId(companyDetailsId)
+                .build()
+            );
+        } catch (Exception e) {
+            // introduce logger
+            return ServiceResult.failure(e.getMessage());
+        }
     }
 }

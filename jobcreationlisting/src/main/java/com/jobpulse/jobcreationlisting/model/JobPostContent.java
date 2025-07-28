@@ -6,8 +6,8 @@ import lombok.AllArgsConstructor;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+// import jakarta.persistence.JoinColumn;
+// import jakarta.persistence.OneToOne;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,9 +30,9 @@ public class JobPostContent {
     @Column(name = "job_post_content_id", nullable = false)
     private UUID jobPostContentId;
 
-    @OneToOne
-    @JoinColumn(name = "job_post_skeleton_id", referencedColumnName="job_post_skeleton_id", nullable = false)
-    private JobPostSkeleton jobPostSkeleton;
+    // @OneToOne
+    // @JoinColumn(name = "job_post_skeleton_id", referencedColumnName="job_post_skeleton_id", nullable = false)
+    private UUID jobPostSkeletonId;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.ENUM)
