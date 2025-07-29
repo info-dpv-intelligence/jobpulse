@@ -1,14 +1,18 @@
 package com.jobpulse.jobcreationlisting.service;
 
 import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostRequest;
+import com.jobpulse.jobcreationlisting.dto.request.GetJobPostsRequest;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCompanyDetailsCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostContentV1Command;
+import com.jobpulse.jobcreationlisting.dto.repository.command.GetJobPostsCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostCompanyResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.OperationResult;
+import com.jobpulse.jobcreationlisting.dto.response.JobListingsResponse;
 import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
 import com.jobpulse.jobcreationlisting.dto.response.ServiceResult;
+import com.jobpulse.jobcreationlisting.dto.util.cursor.CursorEncoderDecoderContract;
 import com.jobpulse.jobcreationlisting.model.*;
 import com.jobpulse.jobcreationlisting.repository.*;
 
@@ -25,12 +29,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class JobPostCreationListingService implements JobPostCreationListingContract {
 
     private final JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp;
+    private final CursorEncoderDecoderContract cursorEncoderDecoder;
+
 
     @Autowired
     public JobPostCreationListingService(
-        JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp
+        JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp,
+        CursorEncoderDecoderContract cursorEncoderDecoder
     ) {
         this.jobPostCreationListingRepositoryImp = jobPostCreationListingRepositoryImp;
+        this.cursorEncoderDecoder = cursorEncoderDecoder;
+    }
+
+    public ServiceResult<JobListingsResponse> getJobPosts(GetJobPostsRequest request) {
+        try {
+            // GetJobPostsCommand command = GetJobPostsCommand.builder().build();
+            jobPostCreationListingRepositoryImp.getJobPosts(GetJobPostsCommand.builder().build()).getData();
+        } catch (Exception e) {
+
+        
+        }
+        return ServiceResult.failure("Not implemented");
     }
 
     @Override

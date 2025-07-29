@@ -3,9 +3,17 @@ package com.jobpulse.jobcreationlisting.repository;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCompanyDetailsCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostContentV1Command;
+import com.jobpulse.jobcreationlisting.dto.repository.command.GetJobPostsCommand;
 import com.jobpulse.jobcreationlisting.repository.mapper.CompanyDetailsMapper;
 import com.jobpulse.jobcreationlisting.repository.mapper.CreateJobPostContentV1Mapper;
 import com.jobpulse.jobcreationlisting.repository.mapper.JobPostMapper;
+import com.jobpulse.jobcreationlisting.repository.query.JobPostQuery;
+import com.jobpulse.jobcreationlisting.repository.query.JobPostQueryBuilder;
+
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Path;
+import jakarta.persistence.criteria.Predicate;
+
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostCompanyResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostContentResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostResponse;
@@ -14,10 +22,15 @@ import com.jobpulse.jobcreationlisting.model.CompanyDetails;
 import com.jobpulse.jobcreationlisting.model.JobPost;
 import com.jobpulse.jobcreationlisting.model.JobPostContentV1;
 
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -35,6 +48,7 @@ public class JobPostCreationAndListingRepositoryImpl implements JobPostCreationA
 
     private final JobPostMapper jobPostMapper;
 
+    private final JobPostQueryBuilder jobPostQueryBuilder;
 
     @Autowired
     public JobPostCreationAndListingRepositoryImpl(
@@ -43,7 +57,8 @@ public class JobPostCreationAndListingRepositoryImpl implements JobPostCreationA
         JobPostContentV1Repository jobPostContentV1Repository,
         CompanyDetailsMapper companyDetailsMapper,
         CreateJobPostContentV1Mapper createJobPostContentV1Mapper,
-        JobPostMapper jobPostMapper
+        JobPostMapper jobPostMapper,
+        JobPostQueryBuilder jobPostQueryBuilder
     ) {
         this.jobPostRepository = jobPostRepository;
         this.jobPostCompanyDetailsRepository = jobPostCompanyDetailsRepository;
@@ -51,6 +66,7 @@ public class JobPostCreationAndListingRepositoryImpl implements JobPostCreationA
         this.companyDetailsMapper = companyDetailsMapper;
         this.createJobPostContentV1Mapper = createJobPostContentV1Mapper;
         this.jobPostMapper = jobPostMapper;
+        this.jobPostQueryBuilder = jobPostQueryBuilder;
     }
 
     @Override
@@ -101,7 +117,21 @@ public class JobPostCreationAndListingRepositoryImpl implements JobPostCreationA
         );
     }
 
+    @Override
     public Optional<CompanyDetails> findCompanyDetailsById(UUID id) {
         return jobPostCompanyDetailsRepository.findById(id);
+    }
+
+    @Override
+    public OperationResult<Page<JobPost>> getJobPosts(GetJobPostsCommand command) {
+        JobPostQuery jobPostQuery = jobPostQueryBuilder.build(command);
+    
+        return OperationResult.success(
+            jobPostRepository
+                .findAll(
+                    jobPostQuery.getSpecification(), 
+                    jobPostQuery.getPageRequest()
+                )
+        );
     }
 }

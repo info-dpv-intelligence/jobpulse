@@ -3,6 +3,7 @@ package com.jobpulse.jobcreationlisting.controller;
 import com.jobpulse.jobcreationlisting.service.JobPostCreationListingContract;
 import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostBodyRequest;
 import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostRequest;
+import com.jobpulse.jobcreationlisting.dto.request.GetJobPostsRequest;
 import com.jobpulse.jobcreationlisting.dto.request.UserContext;
 import com.jobpulse.jobcreationlisting.dto.request.mapper.CreateJobPostRequestMapper;
 import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
@@ -33,6 +34,21 @@ public class JobPostCreationListingController {
     ) {
         this.jobPostCreationListingService = jobPostCreationListingService;
         this.createJobPostRequestMapper = createJobPostRequestMapper;
+    }
+
+    @GetMapping("/jobs")
+    @Operation(
+            summary = "Get all job postings"
+    )
+    public ResponseEntity<?> getJobPosts(
+        @RequestBody @Valid GetJobPostsRequest getJobPostsRequest
+    ) {
+        try {
+            jobPostCreationListingService.getJobPosts(getJobPostsRequest);
+        } catch (Exception e) {
+
+        }
+        return ResponseEntity.ok("Listing");
     }
 
     @PostMapping("/jobs")
