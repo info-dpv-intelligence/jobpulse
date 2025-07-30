@@ -13,4 +13,5 @@ import com.jobpulse.jobcreationlisting.dto.response.view.JobListingView;
 public class JobListingsResponse {
     private List<JobListingView> jobPostListings;
     private boolean hasNext;
+    private String cursor;
 }

@@ -41,8 +41,8 @@ public class JobPostCreationListingController {
     @Operation(
             summary = "Get all job postings"
     )
-    public ResponseEntity<JobListingsResponse> getJobPosts(
-        @RequestBody @Valid GetJobPostsRequest getJobPostsRequest
+    public ResponseEntity<?> getJobPosts(
+        @Valid GetJobPostsRequest getJobPostsRequest
     ) {
         try {
             return ResponseEntity.ok(
