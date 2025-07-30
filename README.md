@@ -66,7 +66,7 @@ A microservices-based job posting and application management system built with J
 - Health checks (`/actuator/health`) 
 
 **API Documentation:**
-- OpenAPI/Swagger
+- OpenAPI/Swagger(In progress 🚧)
 
 ## 🔧 Quick Start
 
@@ -88,10 +88,7 @@ A microservices-based job posting and application management system built with J
 3. **Start services:**
    ```bash
    # Start all services
-   make ENV=dev up
-
-   # Start observability stack
-   ./start-observability.sh
+   make ENV=dev full-up
    ```
 
 ## 📊 Monitoring & Observability
