@@ -6,6 +6,7 @@ import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostRequest;
 import com.jobpulse.jobcreationlisting.dto.request.jobpost.GetJobPostsRequest;
 import com.jobpulse.jobcreationlisting.dto.request.mapper.CreateJobPostRequestMapper;
 import com.jobpulse.jobcreationlisting.dto.request.UserContext;
+import com.jobpulse.jobcreationlisting.dto.response.JobListingsResponse;
 import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,17 +41,18 @@ public class JobPostCreationListingController {
     @Operation(
             summary = "Get all job postings"
     )
-    public ResponseEntity<?> getJobPosts(
+    public ResponseEntity<JobListingsResponse> getJobPosts(
         @RequestBody @Valid GetJobPostsRequest getJobPostsRequest
     ) {
         try {
-            jobPostCreationListingService.getJobPosts(
-                getJobPostsRequest
+            return ResponseEntity.ok(
+                jobPostCreationListingService.getJobPosts(
+                    getJobPostsRequest
+                ).getData()
             );
         } catch (Exception e) {
-
+            return ResponseEntity.ok("Error while fetching content");
         }
-        return ResponseEntity.ok("Listing");
     }
 
     @PostMapping("/jobs")

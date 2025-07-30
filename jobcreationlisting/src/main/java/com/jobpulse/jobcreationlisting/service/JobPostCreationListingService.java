@@ -12,8 +12,8 @@ import com.jobpulse.jobcreationlisting.dto.repository.response.OperationResult;
 import com.jobpulse.jobcreationlisting.dto.response.JobListingsResponse;
 import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
 import com.jobpulse.jobcreationlisting.dto.response.ServiceResult;
-import com.jobpulse.jobcreationlisting.dto.response.view.JobCompanyDetailsView;
 import com.jobpulse.jobcreationlisting.dto.response.view.JobListingView;
+import com.jobpulse.jobcreationlisting.dto.response.view.JobPostViewMapper;
 import com.jobpulse.jobcreationlisting.dto.util.cursor.CursorEncoderDecoderContract;
 import com.jobpulse.jobcreationlisting.dto.util.cursor.CursorV1;
 import com.jobpulse.jobcreationlisting.model.*;
@@ -25,6 +25,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,6 +39,8 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
     private final CursorEncoderDecoderContract<CursorV1> cursorEncoderDecoder;
     private final JobPostProperties jobPostProperties;
     private final JobPostViewMapper jobPostViewMapper;
+    // TODO: Remove Logger
+    private final Logger logger = Logger.getLogger(JobPostCreationListingService.class.getName());
 
     @Autowired
     public JobPostCreationListingService(
@@ -53,27 +56,38 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
     }
 
     public ServiceResult<JobListingsResponse> getJobPosts(GetJobPostsRequest request) {
+        logger.info("Starting getJobPosts with request: " + request);
+        
         try {
             GetJobPostsCommand command;
 
             //1. Decode cursor if present
             if (request.getCursor() != null) {
+                logger.info("Decoding cursor: " + request.getCursor());
                 CursorV1 cursorV1 = cursorEncoderDecoder.decode(request.getCursor()).getCursor();
                 command = GetJobPostsCommand
                     .builder()
                     .cursorId(cursorV1.getId())
                     .cursorCreatedAt(cursorV1.getCreatedAt())
                     .build();
+                logger.info("Built command from cursor with ID: " + cursorV1.getId());
             } else {
+                logger.info("No cursor provided, using default parameters");
                 command = GetJobPostsCommand
                     .builder()
                     .sortField(request.getSortField() != null ? request.getSortField() : jobPostProperties.CREATED_AT)
                     .pageSize(request.getLimit() != null ? request.getLimit() : 10)
                     .build();
+                logger.info("Built command with sortField: " + command.getSortField() + ", pageSize: " + command.getPageSize());
             }
-            // encode cursor
+            
+            logger.info("Executing getJobPosts with command: " + command);
+            
             Page<JobPost> jobPosts = jobPostCreationListingRepositoryImp.getJobPosts(command).getData();
+            logger.info("Retrieved " + jobPosts.getContent().size() + " job posts from repository");
+            
             Page<JobListingView> jobPostListingsViewPage = jobPostViewMapper.toJobListingViewPage(jobPosts);
+            logger.info("Mapped to " + jobPostListingsViewPage.getContent().size() + " job listing views");
 
             JobListingsResponse jobListingsResponse = JobListingsResponse
                 .builder()
@@ -81,11 +95,13 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
                 .hasNext(jobPostListingsViewPage.hasNext())
                 .build();
 
+            logger.info("Built JobListingsResponse with hasNext: " + jobListingsResponse.isHasNext());
             return ServiceResult.success(jobListingsResponse);
         } catch (Exception e) {
-            //
+            logger.severe("Error in getJobPosts: " + e.getMessage());
+            logger.severe("Exception details: " + e.getClass().getSimpleName());
+            return ServiceResult.failure("Failed to retrieve job posts: " + e.getMessage());
         }
-        return ServiceResult.failure("Not implemented");
     }
 
     @Override
