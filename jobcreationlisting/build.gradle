@@ -46,8 +46,10 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 	implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
 	implementation 'jakarta.persistence:jakarta.persistence-api' 
+	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
 
 	compileOnly 'org.projectlombok:lombok'
+	compileOnly 'org.hibernate:hibernate-jpamodelgen:6.6.1.Final'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
@@ -68,7 +70,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// Annotation Processors
-    annotationProcessor 'org.hibernate:hibernate-jpamodelgen'
+	annotationProcessor 'org.hibernate:hibernate-jpamodelgen:6.6.1.Final' 
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
     annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'

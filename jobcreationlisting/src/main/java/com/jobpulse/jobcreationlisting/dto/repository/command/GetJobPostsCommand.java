@@ -1,6 +1,9 @@
 package com.jobpulse.jobcreationlisting.dto.repository.command;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
+
+import org.springframework.data.domain.Sort;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,9 +13,9 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class GetJobPostsCommand {
-    private final Integer pageSize;
-    private final String cursorId;
     private final ZonedDateTime cursorCreatedAt;
+    private final UUID cursorId;
+    private final Integer pageSize;
     private final String sortField;
-    private final String sortDirection;
+    private final Sort.Direction sortDirection;
 }
