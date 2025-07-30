@@ -42,7 +42,7 @@ public class JobPostQueryBuilder {
             );
         }
         
-        Specification<JobPost>finalSpec = specifications.stream().reduce(Specification::and).orElseGet(Specification::unrestricted);
+        Specification<JobPost> finalSpec = specifications.stream().reduce(Specification::and).orElseGet(Specification::unrestricted);
 
         // indexed base sort
         Sort sort = Sort.by(
