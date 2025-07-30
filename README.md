@@ -44,7 +44,11 @@ A microservices-based job posting and application management system built with J
      - Role-based access control (RBAC)
    - **job-service**: (In progress 🚧)
       - **job-creation-listing**: (Parent Link: https://github.com/info-dpv-intelligence/jobpulse/issues/10)
-         - Retrieve available job postings. (Issue link: https://github.com/info-dpv-intelligence/jobpulse/issues/9)
+         - Retrieve available job postings. (Functionality Implemented: ✅, Testing: https://github.com/info-dpv-intelligence/jobpulse/issues/18)
+           - Cursor-based pagination
+            - Limit support
+            - Sort field selection
+            - Sort direction
          - Create a new job post in the system. (Implemented: ✅, Access control and Tests: https://github.com/info-dpv-intelligence/jobpulse/issues/3#issue-3266558186)
       - **job-poster**:
          - List all job posts created by the current poster.
