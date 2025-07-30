@@ -94,7 +94,7 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
             .pageSize(
                 request.getLimit() != null 
                 ? request.getLimit() 
-                : 10
+                : jobPostProperties.DEFAULT_PAGE_SIZE
             )
             .sortField(
                 request.getSortField() != null 
