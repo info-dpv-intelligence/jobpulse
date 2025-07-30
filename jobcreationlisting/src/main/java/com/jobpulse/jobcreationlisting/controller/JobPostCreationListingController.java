@@ -41,18 +41,14 @@ public class JobPostCreationListingController {
     @Operation(
             summary = "Get all job postings"
     )
-    public ResponseEntity<?> getJobPosts(
+    public ResponseEntity<JobListingsResponse> getJobPosts(
         @Valid @ModelAttribute GetJobPostsRequest getJobPostsRequest
     ) {
-        try {
-            return ResponseEntity.ok(
-                jobPostCreationListingService.getJobPosts(
-                    getJobPostsRequest
-                ).getData()
-            );
-        } catch (Exception e) {
-            return ResponseEntity.ok("Error while fetching content");
-        }
+        return ResponseEntity.ok(
+            jobPostCreationListingService.getJobPosts(
+                getJobPostsRequest
+            ).getData()
+        );
     }
 
     @PostMapping("/jobs")
@@ -60,7 +56,7 @@ public class JobPostCreationListingController {
             summary = "Create a new job posting"
     )
     @SecurityRequirement(name = "bearer-jwt")
-    public ResponseEntity<?> createJob(
+    public ResponseEntity<JobPostCreatedAggregateResponse> createJob(
             @RequestBody @Valid CreateJobPostBodyRequest createJobPostBodyRequest,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -70,17 +66,13 @@ public class JobPostCreationListingController {
             userContext
         );
             
-        try {
-            JobPostCreatedAggregateResponse jobPostCreatedAggregateResponse = (
-                jobPostCreationListingService
-                    .createJobPost(createJobPostRequest)
-                    .getData()
-            );
+        JobPostCreatedAggregateResponse jobPostCreatedAggregateResponse = (
+            jobPostCreationListingService
+                .createJobPost(createJobPostRequest)
+                .getData()
+        );
 
-            return ResponseEntity.ok(jobPostCreatedAggregateResponse);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return ResponseEntity.ok(jobPostCreatedAggregateResponse);
 
     }
 }
