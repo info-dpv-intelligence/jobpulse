@@ -12,13 +12,17 @@ import com.jobpulse.jobcreationlisting.dto.repository.response.OperationResult;
 import com.jobpulse.jobcreationlisting.dto.response.JobListingsResponse;
 import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
 import com.jobpulse.jobcreationlisting.dto.response.ServiceResult;
+import com.jobpulse.jobcreationlisting.dto.response.view.JobCompanyDetailsView;
+import com.jobpulse.jobcreationlisting.dto.response.view.JobListingView;
 import com.jobpulse.jobcreationlisting.dto.util.cursor.CursorEncoderDecoderContract;
 import com.jobpulse.jobcreationlisting.dto.util.cursor.CursorV1;
 import com.jobpulse.jobcreationlisting.model.*;
+import com.jobpulse.jobcreationlisting.model.properties.JobPostProperties;
 import com.jobpulse.jobcreationlisting.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,27 +36,52 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
 
     private final JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp;
     private final CursorEncoderDecoderContract<CursorV1> cursorEncoderDecoder;
-
+    private final JobPostProperties jobPostProperties;
+    private final JobPostViewMapper jobPostViewMapper;
 
     @Autowired
     public JobPostCreationListingService(
         JobPostCreationAndListingRepository jobPostCreationListingRepositoryImp,
-        CursorEncoderDecoderContract<CursorV1> cursorEncoderDecoder
+        CursorEncoderDecoderContract<CursorV1> cursorEncoderDecoder,
+        JobPostProperties jobPostProperties,
+        JobPostViewMapper jobPostViewMapper
     ) {
         this.jobPostCreationListingRepositoryImp = jobPostCreationListingRepositoryImp;
         this.cursorEncoderDecoder = cursorEncoderDecoder;
+        this.jobPostProperties = jobPostProperties;
+        this.jobPostViewMapper = jobPostViewMapper;
     }
 
     public ServiceResult<JobListingsResponse> getJobPosts(GetJobPostsRequest request) {
         try {
-            GetJobPostsCommand command = GetJobPostsCommand.builder().build();
-            Page<JobPost> jobPosts = jobPostCreationListingRepositoryImp.getJobPosts(command).getData();
-            // encode cursor
+            GetJobPostsCommand command;
 
-            JobListingsResponse jobListingsResponse = new JobListingsResponse();
-            return ServiceResult.success(
-                jobListingsResponse
-            );
+            //1. Decode cursor if present
+            if (request.getCursor() != null) {
+                CursorV1 cursorV1 = cursorEncoderDecoder.decode(request.getCursor()).getCursor();
+                command = GetJobPostsCommand
+                    .builder()
+                    .cursorId(cursorV1.getId())
+                    .cursorCreatedAt(cursorV1.getCreatedAt())
+                    .build();
+            } else {
+                command = GetJobPostsCommand
+                    .builder()
+                    .sortField(request.getSortField() != null ? request.getSortField() : jobPostProperties.CREATED_AT)
+                    .pageSize(request.getLimit() != null ? request.getLimit() : 10)
+                    .build();
+            }
+            // encode cursor
+            Page<JobPost> jobPosts = jobPostCreationListingRepositoryImp.getJobPosts(command).getData();
+            Page<JobListingView> jobPostListingsViewPage = jobPostViewMapper.toJobListingViewPage(jobPosts);
+
+            JobListingsResponse jobListingsResponse = JobListingsResponse
+                .builder()
+                .jobPostListings(jobPostListingsViewPage.getContent())
+                .hasNext(jobPostListingsViewPage.hasNext())
+                .build();
+
+            return ServiceResult.success(jobListingsResponse);
         } catch (Exception e) {
             //
         }

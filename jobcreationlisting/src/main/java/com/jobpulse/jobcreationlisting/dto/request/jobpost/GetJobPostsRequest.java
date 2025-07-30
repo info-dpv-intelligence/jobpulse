@@ -1,7 +1,6 @@
 package com.jobpulse.jobcreationlisting.dto.request.jobpost;
 
 import lombok.Data;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -9,8 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetJobPostsRequest {
-    @Valid
-    private String sortBy = "createdAt";
-    @Valid
+    private String cursor;
+    private Integer limit;
+    private String sortField = "createdAt";
     private String sortDirection = "DESC";
 }

@@ -17,5 +17,6 @@ public class GetJobPostsCommand {
     private final UUID cursorId;
     private final Integer pageSize;
     private final String sortField;
-    private final Sort.Direction sortDirection;
+    @Builder.Default
+    private final Sort.Direction sortDirection = Sort.Direction.DESC;
 }

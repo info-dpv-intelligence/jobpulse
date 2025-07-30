@@ -44,7 +44,9 @@ public class JobPostCreationListingController {
         @RequestBody @Valid GetJobPostsRequest getJobPostsRequest
     ) {
         try {
-            jobPostCreationListingService.getJobPosts(getJobPostsRequest);
+            jobPostCreationListingService.getJobPosts(
+                getJobPostsRequest
+            );
         } catch (Exception e) {
 
         }
