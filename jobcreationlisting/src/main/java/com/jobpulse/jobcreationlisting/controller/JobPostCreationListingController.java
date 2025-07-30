@@ -42,7 +42,7 @@ public class JobPostCreationListingController {
             summary = "Get all job postings"
     )
     public ResponseEntity<?> getJobPosts(
-        @Valid GetJobPostsRequest getJobPostsRequest
+        @Valid @ModelAttribute GetJobPostsRequest getJobPostsRequest
     ) {
         try {
             return ResponseEntity.ok(
@@ -65,7 +65,6 @@ public class JobPostCreationListingController {
             @AuthenticationPrincipal Jwt jwt
     ) {
         UserContext userContext = UserContext.fromJwt(jwt);
-        //TODD: check the static analysis report
         CreateJobPostRequest createJobPostRequest = createJobPostRequestMapper.toJobPostRequest(
             createJobPostBodyRequest, 
             userContext

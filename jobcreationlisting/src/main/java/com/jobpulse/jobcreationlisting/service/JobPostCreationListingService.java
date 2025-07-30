@@ -4,6 +4,7 @@ import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostRequest;
 import com.jobpulse.jobcreationlisting.dto.request.jobpost.GetJobPostsRequest;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCompanyDetailsCommand;
+import com.jobpulse.jobcreationlisting.dto.request.jobpost.CompanyDetailsRequest;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostContentV1Command;
 import com.jobpulse.jobcreationlisting.dto.repository.command.GetJobPostsCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostCompanyResponse;
@@ -23,9 +24,7 @@ import com.jobpulse.jobcreationlisting.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -39,8 +38,7 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
     private final CursorEncoderDecoderContract<CursorV1> cursorEncoderDecoder;
     private final JobPostProperties jobPostProperties;
     private final JobPostViewMapper jobPostViewMapper;
-    // TODO: Remove Logger
-    private final Logger logger = Logger.getLogger(JobPostCreationListingService.class.getName());
+
 
     @Autowired
     public JobPostCreationListingService(
@@ -56,50 +54,53 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
     }
 
     public ServiceResult<JobListingsResponse> getJobPosts(GetJobPostsRequest request) {
-        logger.info("Starting getJobPosts with request: " + request);
         
         try {
-            GetJobPostsCommand command;
-
-            //1. Decode cursor if present
+            GetJobPostsCommand.GetJobPostsCommandBuilder getJobPostcommandBuilder = GetJobPostsCommand.builder();
+            getJobPostcommandBuilder
+                .pageSize(
+                    request.getLimit() != null 
+                    ? request.getLimit() 
+                    : 10
+                )
+                .sortField(
+                    request.getSortField() != null 
+                    ? request.getSortField() 
+                    : jobPostProperties.CREATED_AT
+                );
             if (request.getCursor() != null) {
-                logger.info("Decoding cursor: " + request.getCursor());
                 CursorV1 cursorV1 = cursorEncoderDecoder.decode(request.getCursor()).getCursor();
-                command = GetJobPostsCommand
-                    .builder()
+                
+                getJobPostcommandBuilder
                     .cursorId(cursorV1.getId())
-                    .cursorCreatedAt(cursorV1.getCreatedAt())
-                    .build();
-                logger.info("Built command from cursor with ID: " + cursorV1.getId());
-            } else {
-                logger.info("No cursor provided, using default parameters");
-                command = GetJobPostsCommand
-                    .builder()
-                    .sortField(request.getSortField() != null ? request.getSortField() : jobPostProperties.CREATED_AT)
-                    .pageSize(request.getLimit() != null ? request.getLimit() : 10)
-                    .build();
-                logger.info("Built command with sortField: " + command.getSortField() + ", pageSize: " + command.getPageSize());
+                    .cursorCreatedAt(cursorV1.getCreatedAt());
             }
+            GetJobPostsCommand getJobPostcommand = getJobPostcommandBuilder.build();
             
-            logger.info("Executing getJobPosts with command: " + command);
-            
-            Page<JobPost> jobPosts = jobPostCreationListingRepositoryImp.getJobPosts(command).getData();
-            logger.info("Retrieved " + jobPosts.getContent().size() + " job posts from repository");
+            Page<JobPost> jobPosts = jobPostCreationListingRepositoryImp.getJobPosts(getJobPostcommand).getData();
             
             Page<JobListingView> jobPostListingsViewPage = jobPostViewMapper.toJobListingViewPage(jobPosts);
-            logger.info("Mapped to " + jobPostListingsViewPage.getContent().size() + " job listing views");
 
+            String nextCursor = null;
+            List<JobPost> content = jobPosts.getContent();
+            if (!content.isEmpty() && jobPosts.hasNext()) {
+                JobPost lastItem = content.get(content.size() - 1);
+                nextCursor = cursorEncoderDecoder.encode(
+                    CursorV1.builder()
+                        .id(lastItem.getId())
+                        .createdAt(lastItem.getCreatedAt())
+                        .build()
+                );
+            }
             JobListingsResponse jobListingsResponse = JobListingsResponse
                 .builder()
                 .jobPostListings(jobPostListingsViewPage.getContent())
                 .hasNext(jobPostListingsViewPage.hasNext())
+                .cursor(nextCursor)
                 .build();
 
-            logger.info("Built JobListingsResponse with hasNext: " + jobListingsResponse.isHasNext());
             return ServiceResult.success(jobListingsResponse);
         } catch (Exception e) {
-            logger.severe("Error in getJobPosts: " + e.getMessage());
-            logger.severe("Exception details: " + e.getClass().getSimpleName());
             return ServiceResult.failure("Failed to retrieve job posts: " + e.getMessage());
         }
     }
@@ -107,62 +108,28 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
     @Override
     @Transactional
     public ServiceResult<JobPostCreatedAggregateResponse> createJobPost(CreateJobPostRequest request) {
-        // 1. Create JobPostCompanyDetails
-        UUID companyDetailsId = Optional.ofNullable(request.getCompanyDetails())
-            .map(cd -> Optional.ofNullable(cd.getCompanyDetailsId())
-            .map(id -> {
-                        boolean exists = jobPostCreationListingRepositoryImp
-                        .findCompanyDetailsById(id)
-                        .isPresent();
-                    if (!exists) {
-                        // logger.error("Company details not found for id: {}", id);
-                        throw new EntityNotFoundException("Company details not found");
-                    }
-                    return id;
-                })
-                .orElseGet(() -> {
-                    try {
-                        CreateJobPostCompanyResponse createJobPostCompanyResponse = jobPostCreationListingRepositoryImp.createJobPostCompany(
-                            CreateJobPostCompanyDetailsCommand.builder()
-                                .name(cd.getName())
-                                .tagline(cd.getTagline())
-                                .phone(cd.getPhone())
-                                .build()
-                            ).getData();
-                        return createJobPostCompanyResponse.getJobPostCompanyId();
-                    } catch (Exception e) {
-                        // logger.error("Error creating company details", e);
-                        throw new RuntimeException(e);
-                    }
-                })
-            )
-            .orElse(null);
+        try {
+            // Step 1: Find or create Company Details
+            UUID companyDetailsId = findOrCreateCompanyDetails(request.getCompanyDetails());
 
-        // 2. Create JobPostContent
-        UUID jobPostContentId = null;
-        CreateJobPostContentV1Command contentCommand = CreateJobPostContentV1Command.builder()
+            // Step 2. Create JobPostContent
+            CreateJobPostContentV1Command contentCommand = CreateJobPostContentV1Command.builder()
                 .description(request.getJobPostDescription().getDescription())
                 .companyDetailsId(companyDetailsId)
                 .revisionStatus(RevisionStatus.DRAFT)
                 .build();
-        try {
-            jobPostContentId = jobPostCreationListingRepositoryImp.createJobPostContent(contentCommand).getData().getJobPostContentId();
-        } catch (Exception e) {
-            // logger.error("Error creating job post content", e);
-            throw new RuntimeException(e);
-        }
+            UUID jobPostContentId = jobPostCreationListingRepositoryImp.createJobPostContent(contentCommand).getData().getJobPostContentId();
 
-        // 3. Create JobPostCommand
-        CreateJobPostCommand createJobPostCommand = CreateJobPostCommand.builder()
+            // Step 3. Create JobPost
+            CreateJobPostCommand createJobPostCommand = CreateJobPostCommand.builder()
                 .title(request.getTitle())
                 .jobPosterId(request.getJobPosterId())
                 .jobPostContentId(jobPostContentId)
                 .status(JobPostStatus.DRAFT)
                 .build();
-
-        try {
             OperationResult<CreateJobPostResponse> createJobPostResponse = jobPostCreationListingRepositoryImp.createJobPost(createJobPostCommand);
 
+            // Step 4. Build and return the successful response
             return ServiceResult.success(
                 JobPostCreatedAggregateResponse.builder()
                 .jobPostId(createJobPostResponse.getData().getJobPostId())
@@ -172,7 +139,29 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
             );
         } catch (Exception e) {
             // logger
-            return ServiceResult.failure(e.getMessage());
+            return ServiceResult.failure("Failed to create job post: " + e.getMessage());
         }
+    }
+
+    private UUID findOrCreateCompanyDetails(CompanyDetailsRequest companyDetailsRequest) {
+        if (companyDetailsRequest == null) {
+            return null;
+        }
+
+        if (companyDetailsRequest.getCompanyDetailsId() != null) {
+            UUID id = companyDetailsRequest.getCompanyDetailsId();
+            return jobPostCreationListingRepositoryImp.findCompanyDetailsById(id)
+                    .map(CompanyDetails::getCompanyDetailsId)
+                    .orElseThrow(() -> new EntityNotFoundException("Company details not found with id: " + id));
+        }
+
+        CreateJobPostCompanyDetailsCommand command = CreateJobPostCompanyDetailsCommand.builder()
+                .name(companyDetailsRequest.getName())
+                .tagline(companyDetailsRequest.getTagline())
+                .phone(companyDetailsRequest.getPhone())
+                .build();
+
+        CreateJobPostCompanyResponse response = jobPostCreationListingRepositoryImp.createJobPostCompany(command).getData();
+        return response.getJobPostCompanyId();
     }
 }
