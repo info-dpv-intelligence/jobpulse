@@ -3,7 +3,7 @@ package com.jobpulse.jobcreationlisting.repository;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCompanyDetailsCommand;
@@ -21,5 +21,5 @@ public interface JobPostCreationAndListingRepository {
     OperationResult<CreateJobPostContentResponse> createJobPostContent(CreateJobPostContentV1Command command);
     OperationResult<CreateJobPostResponse> createJobPost(CreateJobPostCommand command);
     Optional<CompanyDetails> findCompanyDetailsById(UUID id);
-    OperationResult<Page<JobPost>> getJobPosts(GetJobPostsCommand command);
+    OperationResult<Slice<JobPost>> getJobPosts(GetJobPostsCommand command);
 }

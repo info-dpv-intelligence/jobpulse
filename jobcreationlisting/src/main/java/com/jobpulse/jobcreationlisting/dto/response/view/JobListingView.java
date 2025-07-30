@@ -1,5 +1,6 @@
 package com.jobpulse.jobcreationlisting.dto.response.view;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public record JobListingView(
@@ -7,6 +8,6 @@ public record JobListingView(
     String title,
     String description,
     JobCompanyDetailsView companyDetails,
-    String status
-    
+    String status,
+    ZonedDateTime createdAt
 ) {}

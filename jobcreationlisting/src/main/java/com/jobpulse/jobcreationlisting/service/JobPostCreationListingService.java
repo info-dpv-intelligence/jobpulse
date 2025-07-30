@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,30 +57,11 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
     public ServiceResult<JobListingsResponse> getJobPosts(GetJobPostsRequest request) {
         
         try {
-            GetJobPostsCommand.GetJobPostsCommandBuilder getJobPostcommandBuilder = GetJobPostsCommand.builder();
-            getJobPostcommandBuilder
-                .pageSize(
-                    request.getLimit() != null 
-                    ? request.getLimit() 
-                    : 10
-                )
-                .sortField(
-                    request.getSortField() != null 
-                    ? request.getSortField() 
-                    : jobPostProperties.CREATED_AT
-                );
-            if (request.getCursor() != null) {
-                CursorV1 cursorV1 = cursorEncoderDecoder.decode(request.getCursor()).getCursor();
-                
-                getJobPostcommandBuilder
-                    .cursorId(cursorV1.getId())
-                    .cursorCreatedAt(cursorV1.getCreatedAt());
-            }
-            GetJobPostsCommand getJobPostcommand = getJobPostcommandBuilder.build();
+            GetJobPostsCommand getJobPostcommand = buildGetJobPostsCommand(request);
             
-            Page<JobPost> jobPosts = jobPostCreationListingRepositoryImp.getJobPosts(getJobPostcommand).getData();
-            
-            Page<JobListingView> jobPostListingsViewPage = jobPostViewMapper.toJobListingViewPage(jobPosts);
+            Slice<JobPost> jobPosts = jobPostCreationListingRepositoryImp.getJobPosts(getJobPostcommand).getData();
+
+            Slice<JobListingView> jobPostListingsViewPage = jobPostViewMapper.toJobListingViewPage(jobPosts);
 
             String nextCursor = null;
             List<JobPost> content = jobPosts.getContent();
@@ -105,14 +87,42 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
         }
     }
 
+    private GetJobPostsCommand buildGetJobPostsCommand(GetJobPostsRequest request) {
+        GetJobPostsCommand.GetJobPostsCommandBuilder getJobPostcommandBuilder = GetJobPostsCommand.builder();
+
+        getJobPostcommandBuilder
+            .pageSize(
+                request.getLimit() != null 
+                ? request.getLimit() 
+                : 10
+            )
+            .sortField(
+                request.getSortField() != null 
+                ? request.getSortField() 
+                : jobPostProperties.CREATED_AT
+            );
+
+        if (request.getCursor() != null) {
+            CursorV1 cursorV1 = cursorEncoderDecoder.decode(request.getCursor()).getCursor();
+            
+            getJobPostcommandBuilder
+                .cursorId(cursorV1.getId())
+                .cursorCreatedAt(cursorV1.getCreatedAt());
+        }
+
+        if (request.getSortDirection() != Sort.Direction.DESC.toString()) {
+            getJobPostcommandBuilder.sortDirection(Sort.Direction.fromString(request.getSortDirection()));
+        }
+
+        return getJobPostcommandBuilder.build();
+    }
+
     @Override
     @Transactional
     public ServiceResult<JobPostCreatedAggregateResponse> createJobPost(CreateJobPostRequest request) {
         try {
-            // Step 1: Find or create Company Details
             UUID companyDetailsId = findOrCreateCompanyDetails(request.getCompanyDetails());
 
-            // Step 2. Create JobPostContent
             CreateJobPostContentV1Command contentCommand = CreateJobPostContentV1Command.builder()
                 .description(request.getJobPostDescription().getDescription())
                 .companyDetailsId(companyDetailsId)
@@ -120,7 +130,6 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
                 .build();
             UUID jobPostContentId = jobPostCreationListingRepositoryImp.createJobPostContent(contentCommand).getData().getJobPostContentId();
 
-            // Step 3. Create JobPost
             CreateJobPostCommand createJobPostCommand = CreateJobPostCommand.builder()
                 .title(request.getTitle())
                 .jobPosterId(request.getJobPosterId())
@@ -129,7 +138,6 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
                 .build();
             OperationResult<CreateJobPostResponse> createJobPostResponse = jobPostCreationListingRepositoryImp.createJobPost(createJobPostCommand);
 
-            // Step 4. Build and return the successful response
             return ServiceResult.success(
                 JobPostCreatedAggregateResponse.builder()
                 .jobPostId(createJobPostResponse.getData().getJobPostId())

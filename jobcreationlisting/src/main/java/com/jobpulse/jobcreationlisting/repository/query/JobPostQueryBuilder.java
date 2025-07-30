@@ -45,7 +45,11 @@ public class JobPostQueryBuilder {
         Specification<JobPost>finalSpec = specifications.stream().reduce(Specification::and).orElseGet(Specification::unrestricted);
 
         // indexed base sort
-        Sort sort = Sort.by(Sort.Direction.DESC, jobPostProperties.CREATED_AT, jobPostProperties.ID);
+        Sort sort = Sort.by(
+            command.getSortDirection(), 
+            jobPostProperties.CREATED_AT, 
+            jobPostProperties.ID
+        );
 
         if (command.getSortField() != null && !command.getSortField().equals(jobPostProperties.CREATED_AT)) {
 
@@ -62,7 +66,7 @@ public class JobPostQueryBuilder {
             finalSpec, 
             PageRequest.of(
                 0, 
-                command.getPageSize() + 1, 
+                command.getPageSize(), 
                 sort
             )
         );

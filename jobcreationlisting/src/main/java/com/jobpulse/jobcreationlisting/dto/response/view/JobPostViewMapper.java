@@ -2,7 +2,7 @@ package com.jobpulse.jobcreationlisting.dto.response.view;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 
 import com.jobpulse.jobcreationlisting.model.CompanyDetails;
 import com.jobpulse.jobcreationlisting.model.JobPost;
@@ -15,6 +15,7 @@ public interface JobPostViewMapper {
     @Mapping(source = "jobPostContent.description", target = "description")
     @Mapping(source = "jobPostContent.companyDetails", target = "companyDetails")
     @Mapping(source = "status", target = "status")
+    @Mapping(source = "createdAt", target = "createdAt")
     JobListingView toJobListingView(JobPost jobPost);
     
     @Mapping(source = "companyDetailsId", target = "companyDetailsId")
@@ -23,7 +24,7 @@ public interface JobPostViewMapper {
     @Mapping(source = "phone", target = "phone")
     JobCompanyDetailsView toJobCompanyDetailsView(CompanyDetails companyDetails);
     
-    default Page<JobListingView> toJobListingViewPage(Page<JobPost> jobPosts) {
+    default Slice<JobListingView> toJobListingViewPage(Slice<JobPost> jobPosts) {
         return jobPosts.map(this::toJobListingView);
     }
 }

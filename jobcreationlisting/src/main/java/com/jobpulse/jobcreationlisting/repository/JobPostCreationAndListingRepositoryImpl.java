@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -115,7 +115,7 @@ public class JobPostCreationAndListingRepositoryImpl implements JobPostCreationA
     }
 
     @Override
-    public OperationResult<Page<JobPost>> getJobPosts(GetJobPostsCommand command) {
+    public OperationResult<Slice<JobPost>> getJobPosts(GetJobPostsCommand command) {
         JobPostQuery jobPostQuery = jobPostQueryBuilder.build(command);
 
         return OperationResult.success(
