@@ -1,4 +1,4 @@
-package com.jobpulse.jobcreationlisting.dto.request;
+package com.jobpulse.jobcreationlisting.dto.request.jobpost;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;

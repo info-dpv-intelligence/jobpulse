@@ -1,11 +1,11 @@
 package com.jobpulse.jobcreationlisting.controller;
 
 import com.jobpulse.jobcreationlisting.service.JobPostCreationListingContract;
-import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostBodyRequest;
-import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostRequest;
-import com.jobpulse.jobcreationlisting.dto.request.GetJobPostsRequest;
-import com.jobpulse.jobcreationlisting.dto.request.UserContext;
+import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostBodyRequest;
+import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostRequest;
+import com.jobpulse.jobcreationlisting.dto.request.jobpost.GetJobPostsRequest;
 import com.jobpulse.jobcreationlisting.dto.request.mapper.CreateJobPostRequestMapper;
+import com.jobpulse.jobcreationlisting.dto.request.UserContext;
 import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,13 +61,19 @@ public class JobPostCreationListingController {
             @AuthenticationPrincipal Jwt jwt
     ) {
         UserContext userContext = UserContext.fromJwt(jwt);
+        //TODD: check the static analysis report
         CreateJobPostRequest createJobPostRequest = createJobPostRequestMapper.toJobPostRequest(
             createJobPostBodyRequest, 
             userContext
         );
             
         try {
-            JobPostCreatedAggregateResponse jobPostCreatedAggregateResponse = jobPostCreationListingService.createJobPost(createJobPostRequest).getData();
+            JobPostCreatedAggregateResponse jobPostCreatedAggregateResponse = (
+                jobPostCreationListingService
+                    .createJobPost(createJobPostRequest)
+                    .getData()
+            );
+
             return ResponseEntity.ok(jobPostCreatedAggregateResponse);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

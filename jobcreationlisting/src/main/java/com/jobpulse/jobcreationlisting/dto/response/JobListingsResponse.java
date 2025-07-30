@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import java.util.List;
 
+import com.jobpulse.jobcreationlisting.dto.response.view.JobListingView;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

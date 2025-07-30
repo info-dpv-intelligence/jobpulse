@@ -1,11 +1,10 @@
 package com.jobpulse.jobcreationlisting.service;
 
-import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostRequest;
-import com.jobpulse.jobcreationlisting.dto.request.GetJobPostsRequest;
+import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostRequest;
+import com.jobpulse.jobcreationlisting.dto.request.jobpost.GetJobPostsRequest;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostCompanyDetailsCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.command.CreateJobPostContentV1Command;
-import com.jobpulse.jobcreationlisting.dto.repository.command.GetJobPostsCommand;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostCompanyResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.OperationResult;
@@ -43,11 +42,10 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
 
     public ServiceResult<JobListingsResponse> getJobPosts(GetJobPostsRequest request) {
         try {
-            // GetJobPostsCommand command = GetJobPostsCommand.builder().build();
-            jobPostCreationListingRepositoryImp.getJobPosts(GetJobPostsCommand.builder().build()).getData();
+            GetJobPostsCommand command = GetJobPostsCommand.builder().build();
+            jobPostCreationListingRepositoryImp.getJobPosts(command).getData();
         } catch (Exception e) {
-
-        
+            //
         }
         return ServiceResult.failure("Not implemented");
     }

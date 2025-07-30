@@ -26,7 +26,7 @@ public class JobPostQueryBuilder {
         this.jobPostQuerySpecification = new JobPostQuerySpecification();
     }
 
-    public JobPostQuery build(GetJobPostsCommand command) {
+public JobPostQuery build(GetJobPostsCommand command) {
 
         List<Specification<JobPost>> specifications = new ArrayList<>();
 
@@ -37,7 +37,7 @@ public class JobPostQueryBuilder {
         Specification<JobPost>finalSpec = specifications.stream().reduce(Specification::and).orElseGet(Specification::unrestricted);
 
         // indexed base sort
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt", "id");
+        Sort sort = Sort.by(Sort.Direction.DESC, JobPost.createdAt.getName(), JobPost_.id);
 
         if (command.getSortField() != null && !command.getSortField().equals("createdAt")) {
 
@@ -50,6 +50,13 @@ public class JobPostQueryBuilder {
             );
         }
 
-        return new JobPostQuery(finalSpec, PageRequest.of(0, command.getPageSize() + 1, sort));
+        return new JobPostQuery(
+            finalSpec, 
+            PageRequest.of(
+                0, 
+                command.getPageSize() + 1, 
+                sort
+            )
+        );
     }
 }

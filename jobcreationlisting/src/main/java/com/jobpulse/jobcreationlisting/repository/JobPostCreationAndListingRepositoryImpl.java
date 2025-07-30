@@ -10,10 +10,6 @@ import com.jobpulse.jobcreationlisting.repository.mapper.JobPostMapper;
 import com.jobpulse.jobcreationlisting.repository.query.JobPostQuery;
 import com.jobpulse.jobcreationlisting.repository.query.JobPostQueryBuilder;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
-
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostCompanyResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostContentResponse;
 import com.jobpulse.jobcreationlisting.dto.repository.response.CreateJobPostResponse;
@@ -22,15 +18,11 @@ import com.jobpulse.jobcreationlisting.model.CompanyDetails;
 import com.jobpulse.jobcreationlisting.model.JobPost;
 import com.jobpulse.jobcreationlisting.model.JobPostContentV1;
 
-import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -125,7 +117,7 @@ public class JobPostCreationAndListingRepositoryImpl implements JobPostCreationA
     @Override
     public OperationResult<Page<JobPost>> getJobPosts(GetJobPostsCommand command) {
         JobPostQuery jobPostQuery = jobPostQueryBuilder.build(command);
-    
+
         return OperationResult.success(
             jobPostRepository
                 .findAll(
