@@ -37,7 +37,8 @@ public class JobPostQueryBuilder {
                     command.getCursorCreatedAt(), 
                     jobPostProperties.CREATED_AT,
                     command.getCursorId(),
-                    jobPostProperties.ID
+                    jobPostProperties.ID,
+                    command.getSortDirection()
                 )
             );
         }
