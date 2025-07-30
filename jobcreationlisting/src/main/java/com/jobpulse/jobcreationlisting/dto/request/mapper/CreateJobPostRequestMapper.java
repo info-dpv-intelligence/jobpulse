@@ -3,8 +3,8 @@ package com.jobpulse.jobcreationlisting.dto.request.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostBodyRequest;
-import com.jobpulse.jobcreationlisting.dto.request.CreateJobPostRequest;
+import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostBodyRequest;
+import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostRequest;
 import com.jobpulse.jobcreationlisting.dto.request.UserContext;
 
 @Mapper(componentModel = "spring")

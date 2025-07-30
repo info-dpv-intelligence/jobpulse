@@ -1,0 +1,5 @@
+- Testing
+- OpenApiConfig
+- ObservabilityConfig
+- LoggerConfig
+- Service template for further microservice scaffolding

@@ -58,3 +58,5 @@ CREATE TABLE IF NOT EXISTS job_post (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (job_post_content_id) REFERENCES job_post_content_v1(job_post_content_id)
 );
+
+-- @TODO: add indexing
