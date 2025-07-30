@@ -110,7 +110,7 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
                 .cursorCreatedAt(cursorV1.getCreatedAt());
         }
 
-        if (request.getSortDirection() != Sort.Direction.DESC.toString()) {
+        if (!request.getSortDirection().equals(Sort.Direction.DESC.toString())) {
             getJobPostcommandBuilder.sortDirection(Sort.Direction.fromString(request.getSortDirection()));
         }
 
