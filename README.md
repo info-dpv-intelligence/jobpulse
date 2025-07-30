@@ -39,7 +39,7 @@ A microservices-based job posting and application management system built with J
    - [Job Seeker](docs/job-service/job-seeker/design.puml) - Manage applications
 
 ## Features
-   - **auth-service**: (Implemented: ✅)
+   - **auth-service**: (Functionality Implemented: ✅, Tests: https://github.com/info-dpv-intelligence/jobpulse/issues/19)
      - User registration and login with JWT tokens
      - Role-based access control (RBAC)
    - **job-service**: (In progress 🚧)
