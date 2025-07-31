@@ -92,6 +92,25 @@ A microservices-based job posting and application management system built with J
    # Start all services
    make ENV=dev full-up
    ```
+Apologies, the API specification configuration is under progress:
+
+In the meantime
+
+The auth-service is responsible for user registration/login and issuing JWT tokens
+You can access it: 
+   - Register: http://localhost:8080/v1/auth/register
+   - Login: http://localhost:8080/v1/auth/login
+      On successful login, you will receive {
+    "accessToken": "accessToken",
+    "refreshToken": "refreshToken"
+}
+The jobpostcreationlisting is avaiable for fetching and creating the job posts.
+You can access it:
+   Authorization: Bearer <accessToken>
+   GET: 
+   - http://localhost:8081/v1/jobs?sortDirection=ASC
+   POST:
+   - http://localhost:8081/v1/jobs
 
 ## 📊 Monitoring & Observability
 
