@@ -50,6 +50,8 @@ A microservices-based job posting and application management system built with J
             - Sort field selection
             - Sort direction
          - Create a new job post in the system. (Functionality Implemented: ✅, Access control and Tests: https://github.com/info-dpv-intelligence/jobpulse/issues/3#issue-3266558186)
+      - **jobpulse-microservice-starter**: (Issue Link: https://github.com/info-dpv-intelligence/jobpulse/issues/20)
+        - _A lightweight starter template with common configs, to quickly spin up new JobPulse microservices.
       - **job-poster**:
          - List all job posts created by the current poster.
          — Modify the status or visibility of a job post.
