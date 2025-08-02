@@ -19,11 +19,13 @@ import java.time.Instant;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.JwtException;
 import java.nio.charset.StandardCharsets;
 
+@Service
 public class JwtService implements JwtServiceContract {
     private final JwtConfig jwtConfig;
     private final RefreshTokenRepository refreshTokenRepository;

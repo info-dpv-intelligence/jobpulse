@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 public class PasswordEncryptDecryptService implements PasswordEncryptDecryptServiceContract {
     
     private final BCryptPasswordEncoder passwordEncoder;
-    
+
     @Autowired
     public PasswordEncryptDecryptService(
         BCryptPasswordEncoder passwordEncoder
