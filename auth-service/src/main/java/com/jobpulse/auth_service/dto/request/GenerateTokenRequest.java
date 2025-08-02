@@ -1,18 +1,15 @@
-package com.jobpulse.auth_service.dto;
+package com.jobpulse.auth_service.dto.request;
 
 import com.jobpulse.auth_service.model.UserRole;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Request object for generating JWT tokens.
- * Contains only the necessary information needed for token generation.
- */
+
+@Builder
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class GenerateTokenRequest {
     private UUID userId;

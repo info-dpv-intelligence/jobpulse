@@ -1,7 +1,8 @@
 package com.jobpulse.auth_service.service.module.jwt;
 
-import com.jobpulse.auth_service.dto.GenerateTokenRequest;
-import com.jobpulse.auth_service.dto.RefreshTokenRequest;
+import com.jobpulse.auth_service.dto.request.GenerateTokenRequest;
+import com.jobpulse.auth_service.dto.request.RefreshTokenRequest;
+import com.jobpulse.auth_service.dto.response.TokenResponse;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.model.RefreshToken;
 import com.jobpulse.auth_service.repository.RefreshTokenRepository;
@@ -16,23 +17,22 @@ import java.util.Date;
 import java.util.List;
 import java.time.Instant;
 import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.JwtException;
 import java.nio.charset.StandardCharsets;
 
 public class JwtService implements JwtServiceContract {
-    private JwtConfig jwtConfig;
+    private final JwtConfig jwtConfig;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
 
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = this.jwtConfig.jwtSecret().getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
+    @Autowired
     public JwtService(
         JwtConfig jwtConfig,
-        RefreshTokenRepository refreshTokenRepository, 
+        RefreshTokenRepository refreshTokenRepository,
         UserRepository userRepository
     ) {
         this.jwtConfig = jwtConfig;
@@ -40,17 +40,35 @@ public class JwtService implements JwtServiceContract {
         this.userRepository = userRepository;
     }
 
-    @Override
-    public String generateToken(GenerateTokenRequest request) {
-        Instant now = Instant.now();
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = this.jwtConfig.jwtSecret().getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
-        return Jwts.builder()
+    @Override
+    public TokenResponse generateToken(GenerateTokenRequest request) {
+        revokeAllRefreshTokens(RefreshTokenRequest.builder()
+            .userId(request.getUserId())
+            .build());
+
+        Instant now = Instant.now();
+        String accessToken = Jwts.builder()
             .subject(request.getUserId().toString())
+            .claim("email", request.getEmail())
             .claim("role", request.getRole().name())
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plusMillis(this.jwtConfig.jwtExpirationMs())))
             .signWith(getSigningKey())
             .compact();
+
+        RefreshToken refreshToken = generateRefreshToken(RefreshTokenRequest.builder()
+            .userId(request.getUserId())
+            .build());
+
+        return TokenResponse.builder()
+            .accessToken(accessToken)
+            .refreshToken(refreshToken.getToken())
+            .build();
     }
 
     @Override
@@ -67,9 +85,9 @@ public class JwtService implements JwtServiceContract {
         }
     }
 
-    @Override
-    public RefreshToken generateRefreshToken(RefreshTokenRequest request) {
+    private RefreshToken generateRefreshToken(RefreshTokenRequest request) {
         User user = userRepository.findById(request.getUserId())
+        //TODO: user error placement move it to userservice
             .orElseThrow(() -> new RuntimeException("User not found"));
             
         String token = generateSecureToken();

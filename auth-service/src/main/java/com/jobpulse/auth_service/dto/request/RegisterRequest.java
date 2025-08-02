@@ -1,12 +1,16 @@
-package com.jobpulse.auth_service.dto;
+package com.jobpulse.auth_service.dto.request;
 
 import com.jobpulse.auth_service.model.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
 
+@Value
+@Builder
 @Schema(description = "Request payload for user registration")
 @Data
 public class RegisterRequest {

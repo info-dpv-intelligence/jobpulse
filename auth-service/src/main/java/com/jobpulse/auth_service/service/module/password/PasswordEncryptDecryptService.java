@@ -1,19 +1,19 @@
 package com.jobpulse.auth_service.service.module.password;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/**
- * BCrypt implementation of password service.
- * Uses BCrypt algorithm for password encoding and verification.
- */
 @Service
-public class BCryptPasswordService implements PasswordServiceContract {
+public class PasswordEncryptDecryptService implements PasswordEncryptDecryptServiceContract {
     
     private final BCryptPasswordEncoder passwordEncoder;
     
-    public BCryptPasswordService() {
-        this.passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    public PasswordEncryptDecryptService(
+        BCryptPasswordEncoder passwordEncoder
+    ) {
+        this.passwordEncoder = passwordEncoder;
     }
     
     @Override

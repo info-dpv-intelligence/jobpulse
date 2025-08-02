@@ -1,10 +1,14 @@
 package com.jobpulse.auth_service.model;
 
-import com.jobpulse.auth_service.events.AggregateRoot;
-import com.jobpulse.auth_service.events.UserRegisteredEvent;
-import jakarta.persistence.*;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.UUID;
@@ -12,11 +16,10 @@ import java.util.UUID;
 @Entity
 @Table(name = "app_user")
 @Data
-@EqualsAndHashCode(callSuper = true)
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends AggregateRoot {
-    
+public class User {
     @Id
     @GeneratedValue
     private UUID id;
@@ -29,23 +32,4 @@ public class User extends AggregateRoot {
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
-
-    public static User register(String email, String password, UserRole role) {
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword(password);
-        user.setRole(role);
-        return user;
-    }
-
-    public void confirmRegistration() {
-        if (this.id != null) {
-            UserRegisteredEvent event = new UserRegisteredEvent(
-                this.id.toString(), 
-                this.email, 
-                this.role.name()
-            );
-            raiseEvent(event);
-        }
-    }
 }

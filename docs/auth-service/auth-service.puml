@@ -179,37 +179,4 @@ UserService --> UserDomainEventLayerContract
 UserService --> PasswordServiceContract
 
 UserDomainEventLayerContract --> User
-
-' USER REGISTRATION FLOW
-group User Registration Domain Events Lifecycle
-    actor user as "User"
-    
-    user -> AuthController: register(RegisterRequest)
-    AuthController -> UserServiceContract: registerUser(request)
-    UserServiceContract -> UserDomainEventLayerContract: registeringUser(action)
-    UserDomainEventLayerContract -> UserDomainEventLayerContract: raiseEvent(EventType.USER_CREATED)
-    UserDomainEventLayerContract -> UserServiceContract: return User domain object
-    UserServiceContract -> UserRepository: save(user)
-    UserServiceContract -> UserDomainEventLayerContract: confirm()
-    UserDomainEventLayerContract -> UserDomainEventLayerContract: publishEvents()
-    UserDomainEventLayerContract --> user: Registration Success
-    
-    alt Registration Error
-        UserServiceContract -> UserDomainEventLayerContract: rollback()
-        UserDomainEventLayerContract -> UserDomainEventLayerContract: clearDomainEvents()
-        UserDomainEventLayerContract --> user: Registration Failed
-    end
-end
-
-' TOKEN GENERATION SEQUENCE
-group JWT Token Generation Sequence
-    actor service as "Auth Service"
-    
-    service -> JwtServiceContract: generateToken(GenerateTokenRequest)
-    JwtServiceContract -> JwtServiceContract: revokeAllRefreshTokens(userId)
-    JwtServiceContract -> UserRepository: revoke existing refresh tokens
-    JwtServiceContract -> JwtServiceContract: generateRefreshToken(request)
-    JwtServiceContract -> UserRepository: save new refresh token
-    JwtServiceContract -> service: return TokenResponse
-end
 @enduml
