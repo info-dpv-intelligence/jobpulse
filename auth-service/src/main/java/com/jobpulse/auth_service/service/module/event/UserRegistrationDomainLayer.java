@@ -10,6 +10,7 @@ import com.jobpulse.auth_service.service.module.event.broker.model.PublishEvents
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.AfterDomainEventPublication;
+import org.springframework.data.domain.DomainEvents;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +70,7 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
         return !this.events.isEmpty();
     }
 
+    @DomainEvents
     @Override
     public List<DomainEventInterface<UserCreatedEvent, UserCreatedPayload>> domainEvents() {
         return this.events;
