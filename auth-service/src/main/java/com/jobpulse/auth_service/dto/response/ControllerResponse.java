@@ -12,7 +12,7 @@ public class ControllerResponse<T> {
     boolean status;
 
     @Schema(description = "HTTP status code")
-    Integer code;
+    int code;
 
     @Schema(description = "Response message")
     String message;
