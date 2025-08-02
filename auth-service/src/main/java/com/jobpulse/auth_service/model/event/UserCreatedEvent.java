@@ -1,20 +1,18 @@
 package com.jobpulse.auth_service.model.event;
 
-import com.jobpulse.auth_service.model.User;
-import lombok.Getter;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
-@Getter
-public class UserCreatedEvent extends DomainEvent {
-    private final String userId;
-    private final String email;
+import lombok.Builder;
 
-    public UserCreatedEvent(User user) {
-        super(EventType.USER_CREATED);
-        this.userId = user.getId().toString();
-        this.email = user.getEmail();
-    }
-
-    public static UserCreatedEvent from(User user) {
-        return new UserCreatedEvent(user);
-    }
+@Builder
+public record UserCreatedEvent (
+    UUID eventId,
+    EventType eventType,
+    ZonedDateTime createdAt,
+    UUID aggregateId,
+    UserCreatedPayload payload
+) implements DomainEventInterface<UserCreatedEvent, UserCreatedPayload>{
+    
 }
+

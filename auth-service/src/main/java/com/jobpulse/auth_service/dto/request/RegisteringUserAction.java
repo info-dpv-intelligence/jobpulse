@@ -1,4 +1,4 @@
-package com.jobpulse.auth_service.dto;
+package com.jobpulse.auth_service.dto.request;
 
 import com.jobpulse.auth_service.model.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;

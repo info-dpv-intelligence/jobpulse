@@ -1,6 +1,6 @@
 package com.jobpulse.auth_service.service;
 
-import com.jobpulse.auth_service.dto.RegisteringUserAction;
+import com.jobpulse.auth_service.dto.request.RegisteringUserAction;
 import com.jobpulse.auth_service.dto.request.GenerateTokenRequest;
 import com.jobpulse.auth_service.dto.request.LoginRequest;
 import com.jobpulse.auth_service.dto.request.RegisterRequest;
@@ -11,7 +11,7 @@ import com.jobpulse.auth_service.exception.InvalidCredentialsException;
 import com.jobpulse.auth_service.exception.UserAlreadyExistsException;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
-import com.jobpulse.auth_service.service.module.event.UserDomainEventLayerContract;
+import com.jobpulse.auth_service.service.module.event.UserRegistrationDomainLayer;
 import com.jobpulse.auth_service.service.module.jwt.JwtServiceContract;
 import com.jobpulse.auth_service.service.module.password.PasswordEncryptDecryptServiceContract;
 
@@ -24,19 +24,19 @@ public class UserService implements UserServiceContract {
     private final UserRepository userRepository;
     private final JwtServiceContract jwtService;
     private final PasswordEncryptDecryptServiceContract passwordService;
-    private final UserDomainEventLayerContract eventLayer;
+    private final UserRegistrationDomainLayer userRegistrationDomainLayer;
 
     @Autowired
     public UserService(
         UserRepository userRepository,
         JwtServiceContract jwtService,
         PasswordEncryptDecryptServiceContract passwordService,
-        UserDomainEventLayerContract eventLayer
+        UserRegistrationDomainLayer userRegistrationDomainLayer
     ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordService = passwordService;
-        this.eventLayer = eventLayer;
+        this.userRegistrationDomainLayer = userRegistrationDomainLayer;
     }
 
     @Override
@@ -53,13 +53,12 @@ public class UserService implements UserServiceContract {
                 .role(request.getRole())
                 .build();
 
-            User user = eventLayer.registeringUser(action);
+            User user = userRegistrationDomainLayer.touchUserForRegistration(action);
             user = userRepository.save(user);
-            
-            eventLayer.publishEvents();
+
             return UserRegistrationResponse.builder().userId(user.getId().toString()).build();
         } catch (Exception e) {
-            eventLayer.rollback();
+            userRegistrationDomainLayer.rollback();
             throw e;
         }
     }
