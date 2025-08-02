@@ -11,7 +11,7 @@ import com.jobpulse.auth_service.exception.InvalidCredentialsException;
 import com.jobpulse.auth_service.exception.UserAlreadyExistsException;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.repository.UserRepository;
-import com.jobpulse.auth_service.service.module.event.UserRegistrationDomainLayer;
+import com.jobpulse.auth_service.service.module.event.UserRegistrationDomainLayerContract;
 import com.jobpulse.auth_service.service.module.jwt.JwtServiceContract;
 import com.jobpulse.auth_service.service.module.password.PasswordEncryptDecryptServiceContract;
 
@@ -24,14 +24,14 @@ public class UserService implements UserServiceContract {
     private final UserRepository userRepository;
     private final JwtServiceContract jwtService;
     private final PasswordEncryptDecryptServiceContract passwordService;
-    private final UserRegistrationDomainLayer userRegistrationDomainLayer;
+    private final UserRegistrationDomainLayerContract userRegistrationDomainLayer;
 
     @Autowired
     public UserService(
         UserRepository userRepository,
         JwtServiceContract jwtService,
         PasswordEncryptDecryptServiceContract passwordService,
-        UserRegistrationDomainLayer userRegistrationDomainLayer
+        UserRegistrationDomainLayerContract userRegistrationDomainLayer
     ) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
