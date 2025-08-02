@@ -1,171 +1,215 @@
-@startuml auth-service-architecture
-!theme plain
-skinparam class {
-    BackgroundColor LightBlue
-    BorderColor Black
-    ArrowColor Black
+@startuml auth-service-design
+title JobPulse Auth Service 
+
+package dto {
+    package response {
+        class ControllerResponse {
+            +boolean status
+            +Integer code
+            +String message
+            +T data
+        }
+        class AccessToken {
+            +String token
+        }
+        
+        class RefreshToken {
+            +String token
+        }
+
+        class TokenResponse {
+            +String accessToken
+            +String refreshToken
+        }
+        class LoginResponse {
+            TokenResponse tokens
+        }
+        class RegisterResponse {
+            UUID id
+        }
+    }
+    package request {
+        class RegisterRequest {
+            +email: String
+            +password: String
+            +role: UserRole
+        }
+        
+        class LoginRequest {
+            +email: String
+            +password: String
+        }
+        class RegisteringUserAction {
+            +email: String
+            +password: String
+            +role: UserRole
+        }
+        class GenerateTokenRequest {
+            +UUID userId
+            +String email
+            +List<String> roles
+        }
+
+        class RefreshTokenRequest {
+            +UUID userId
+            +String oldToken
+        }
+    }
 }
 
-title JobPulse Auth Service Architecture
+package exception {
+    abstract class BaseDomainException extends RuntimeException {
+        +BaseDomainException(String message)
+    }
 
-package "Controllers" {
+    class UserNotFoundException extends BaseDomainException {
+        +UserNotFoundException(String email)
+    }
+
+    class InvalidCredentialsException extends BaseDomainException {
+        +InvalidCredentialsException()
+    }
+}
+package config {
+    package controller {
+        annotation @RestControllerAdvice
+        class GlobalExceptionHandler {
+            +ControllerResponse handleUserNotFound(UserNotFoundException)
+            +ControllerResponse handleInvalidCredentials(InvalidCredentialsException)
+            +ControllerResponse handleGenericException(Exception)
+        }
+    }
+}
+
+package model {
+    package enum {
+        enum UserRole {
+            ADMIN
+            CANDIDATE_SEEKER
+            JOB_SEEKER
+        }
+    }
+    class UserEvent {
+        -eventType: EventType
+        -userId: String
+        -email: String
+        +{static} created(String userId, String email): UserEvent
+        +{static} updated(String userId, String email): UserEvent
+    }
+    enum EventType {
+        USER_CREATED
+        USER_UPDATED
+        USER_DELETED
+    }
+}
+
+package controller {
     class AuthController {
         -userService: UserServiceContract
-        +register(RegisterRequest): ResponseEntity<?>
-        +login(LoginRequest): ResponseEntity<?>
-    }
-    
-    class PingController {
-        +ping(): String
-        +protectedPing(): String
+        +ControllerResponse<RegisterResponse> register(RegisterRequest request)
+        +ControllerResponse<LoginResponse> login(LoginRequest request)
     }
 }
 
-package "Services" {
-    interface UserServiceContract {
-        +registerUser(RegisterRequest): ServiceResult<UserRegistrationResponse>
-        +login(LoginRequest): ServiceResult<AuthResponse>
-    }
-    
-    class UserService {
-        -userRepository: UserRepository
-        -jwtService: JwtServiceContract
-        -userEventProducer: UserEventProducer
-        -passwordEncoder: BCryptPasswordEncoder
-        +registerUser(RegisterRequest): ServiceResult<UserRegistrationResponse>
-        +login(LoginRequest): ServiceResult<AuthResponse>
-    }
-    
-    interface JwtServiceContract {
-        +generateToken(GenerateTokenRequest): String
-        +generateRefreshToken(RefreshTokenRequest): RefreshToken
-        +revokeAllRefreshTokens(RefreshTokenRequest): void
-    }
-    
-    class JwtService {
-        +generateToken(GenerateTokenRequest): String
-        +generateRefreshToken(RefreshTokenRequest): RefreshToken
-        +revokeAllRefreshTokens(RefreshTokenRequest): void
+package service {
+    package user {
+        package password {
+            interface PasswordServiceContract {
+                String encode(String rawPassword);
+                boolean matches(String rawPassword, String encodedPassword);
+            }
+
+            class PasswordService implements PasswordServiceContract {
+            }
+        }
+        package jwt {
+            interface JwtServiceContract {
+                +TokenResponse generateToken(GenerateTokenRequest request)
+                -RefreshToken generateRefreshToken(RefreshTokenRequest request)
+                -boolean revokeAllRefreshTokens(RefreshTokenRequest request)
+            }
+            class JwtService implements JwtServiceContract {}
+        }
+
+        package event {
+            interface UserDomainEventLayerContract {
+                +User registeringUser(RegisteringUserAction action);
+                +void raiseEvent(DomainEvent event);
+                +void clearEvents();
+                +boolean hasEvents();
+                +List<DomainEvent> domainEvents();
+                +void clearDomainEvents();
+                +void publishEvents();
+                +void rollback();
+            }
+            class UserDomainEventLayer implements UserDomainEventLayerContract {}
+        }
+
+        interface UserServiceContract {
+            +RegisterResponse registerUser(RegisterRequest request)
+            +LoginResponse login(LoginRequest request)
+        }
+
+        class UserService implements UserServiceContract {
+        }
     }
 }
 
-package "Repositories" {
-    interface UserRepository {
-        +existsByEmail(String): boolean
-        +findByEmail(String): User
-        +save(User): User
+package repository {
+    package user {
+        interface UserRepository {}
     }
 }
 
-package "Domain" {
+package domain {
     class User {
         +id: UUID
         +email: String
         +password: String
         +role: UserRole
     }
-    
-    enum UserRole {
-        ADMIN
-        JOB_POSTER
-        JOB_APPLICANT
-    }
-    
-    class RefreshToken {
-        +token: String
-        +expiresAt: DateTime
-        +userId: UUID
-    }
 }
 
-package "DTOs" {
-    class "ServiceResult<T>" {
-        -success: boolean
-        -data: T
-        -errorMessage: String
-        -errorCode: String
-        +{static} success(T): ServiceResult<T>
-        +{static} failure(String, String): ServiceResult<T>
-        +isSuccess(): boolean
-        +isFailure(): boolean
-    }
+AuthController --> UserServiceContract
+
+
+UserService --> UserRepository
+UserService --> JwtServiceContract
+UserService --> UserDomainEventLayerContract
+UserService --> PasswordServiceContract
+
+UserDomainEventLayerContract --> User
+
+' USER REGISTRATION FLOW
+group User Registration Domain Events Lifecycle
+    actor user as "User"
     
-    class RegisterRequest {
-        +email: String
-        +password: String
-        +role: UserRole
-    }
+    user -> AuthController: register(RegisterRequest)
+    AuthController -> UserServiceContract: registerUser(request)
+    UserServiceContract -> UserDomainEventLayerContract: registeringUser(action)
+    UserDomainEventLayerContract -> UserDomainEventLayerContract: raiseEvent(EventType.USER_CREATED)
+    UserDomainEventLayerContract -> UserServiceContract: return User domain object
+    UserServiceContract -> UserRepository: save(user)
+    UserServiceContract -> UserDomainEventLayerContract: confirm()
+    UserDomainEventLayerContract -> UserDomainEventLayerContract: publishEvents()
+    UserDomainEventLayerContract --> user: Registration Success
     
-    class LoginRequest {
-        +email: String
-        +password: String
-    }
+    alt Registration Error
+        UserServiceContract -> UserDomainEventLayerContract: rollback()
+        UserDomainEventLayerContract -> UserDomainEventLayerContract: clearDomainEvents()
+        UserDomainEventLayerContract --> user: Registration Failed
+    end
+end
+
+' TOKEN GENERATION SEQUENCE
+group JWT Token Generation Sequence
+    actor service as "Auth Service"
     
-    class AuthResponse {
-        +accessToken: String
-        +refreshToken: String
-    }
-    
-    class UserRegistrationResponse {
-        +userId: String
-        +message: String
-        +{static} success(String): UserRegistrationResponse
-    }
-}
-
-package "Events" {
-    class UserEventProducer {
-        +sendUserEvent(UserEvent): void
-    }
-    
-    class UserEvent {
-        -eventType: EventType
-        -userId: String
-        -email: String
-        +{static} created(String, String): UserEvent
-        +{static} updated(String, String): UserEvent
-    }
-    
-    enum EventType {
-        CREATED
-        UPDATED
-    }
-}
-
-package "Observability" {
-    class EndpointMetricsAspect {
-        -meterRegistry: MeterRegistry
-        +measureEndpoint(ProceedingJoinPoint): Object
-    }
-}
-
-package "Configuration" {
-    class SecurityConfig {
-        +filterChain(HttpSecurity): SecurityFilterChain
-    }
-    
-    class OpenApiConfig {
-        +openAPI(): OpenAPI
-    }
-}
-
-AuthController --> UserServiceContract : uses
-UserService ..|> UserServiceContract : implements
-JwtService ..|> JwtServiceContract : implements
-
-UserService --> UserRepository : uses
-UserService --> JwtServiceContract : uses
-UserService --> UserEventProducer : uses
-
-UserService --> "ServiceResult<UserRegistrationResponse>" : returns
-UserService --> "ServiceResult<AuthResponse>" : returns
-
-UserEventProducer --> UserEvent : publishes
-UserEvent --> EventType : has
-
-EndpointMetricsAspect --> AuthController : intercepts
-
-User --> UserRole : has
-RefreshToken --> User : belongs to
-
+    service -> JwtServiceContract: generateToken(GenerateTokenRequest)
+    JwtServiceContract -> JwtServiceContract: revokeAllRefreshTokens(userId)
+    JwtServiceContract -> UserRepository: revoke existing refresh tokens
+    JwtServiceContract -> JwtServiceContract: generateRefreshToken(request)
+    JwtServiceContract -> UserRepository: save new refresh token
+    JwtServiceContract -> service: return TokenResponse
+end
 @enduml
