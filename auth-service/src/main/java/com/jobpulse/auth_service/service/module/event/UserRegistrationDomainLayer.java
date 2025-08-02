@@ -7,12 +7,14 @@ import com.jobpulse.auth_service.model.event.UserCreatedEvent;
 import com.jobpulse.auth_service.model.event.UserCreatedPayload;
 import com.jobpulse.auth_service.service.module.event.broker.EventBrokerContract;
 import com.jobpulse.auth_service.service.module.event.broker.model.PublishEventsCommand;
+import com.jobpulse.auth_service.service.module.event.broker.model.UserRegistrationTransactionCompletedEvent;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.AfterDomainEventPublication;
-import org.springframework.data.domain.DomainEvents;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +25,15 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
 
     private final List<DomainEventInterface<UserCreatedEvent, UserCreatedPayload>> events = new ArrayList<>();
     private final EventBrokerContract eventBroker;
+    private final ApplicationEventPublisher eventsToPublisher;
 
     @Autowired
     public UserRegistrationDomainLayer(
-        EventBrokerContract eventBroker
+        EventBrokerContract eventBroker,
+        ApplicationEventPublisher eventsToPublisher
     ) {
         this.eventBroker = eventBroker;
+        this.eventsToPublisher = eventsToPublisher;
     }
 
     @Override
@@ -51,6 +56,7 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
             .build();
     
         raiseEvent(event);
+        eventsToPublisher.publishEvent(new UserRegistrationTransactionCompletedEvent());
 
         return user;
     }
@@ -70,7 +76,6 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
         return !this.events.isEmpty();
     }
 
-    @DomainEvents
     @Override
     public List<DomainEventInterface<UserCreatedEvent, UserCreatedPayload>> domainEvents() {
         return this.events;
@@ -82,9 +87,9 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
     }
 
     @Override
-    @Async
-    @AfterDomainEventPublication
-    public void publishEvents() {
+    @Async("domainEventExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void publishEvents(UserRegistrationTransactionCompletedEvent event) {
         if (!hasEvents()) {
             return;
         }
@@ -95,7 +100,7 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
                 .build()
         );
 
-        clearEvents();
+        clearDomainEvents();
     }
 
     @Override
