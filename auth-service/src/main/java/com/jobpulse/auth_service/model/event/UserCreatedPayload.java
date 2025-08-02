@@ -7,6 +7,12 @@ import lombok.Builder;
 @Builder
 public record UserCreatedPayload(
     String email,
-    UserRole role
+    UserRole role,
+    EventType eventType
 ) {
+    public static UserCreatedPayloadBuilder builder() {
+        return UserCreatedPayload.builder().eventType(
+            EventType.USER_CREATED
+        );
+    }
 }

@@ -13,6 +13,10 @@ public record UserCreatedEvent (
     UUID aggregateId,
     UserCreatedPayload payload
 ) implements DomainEventInterface<UserCreatedEvent, UserCreatedPayload>{
-    
+    public static UserCreatedEventBuilder builder() {
+        return new UserCreatedEventBuilder()
+                .eventType(EventType.USER_CREATED)
+                .createdAt(ZonedDateTime.now());
+    }
 }
 
