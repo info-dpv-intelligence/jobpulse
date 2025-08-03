@@ -42,27 +42,14 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
     @Override
     public User touchUserForRegistration(RegisteringUserAction action) {
         User user = User.builder()
-            .email(action.getEmail())
-            .password(action.getEncodedPassword())
-            .role(action.getRole())
-            .build();
+                        .email(action.getEmail())
+                        .password(action.getEncodedPassword())
+                        .role(action.getRole())
+                    .build();
 
-        DomainEventInterface<UserCreatedEventPayload> event = UserCreatedEvent
-            .builder()
-                .payload(
-                    UserCreatedEventPayload
-                        .builder()
-                            .email(user.getEmail())
-                            .role(user.getRole())
-                        .build()
-                )
-            .build();
+        DomainEventInterface<UserCreatedEventPayload> event = createUserCreatedDomainEvent(user);
         raiseEvent(event);
-        try {
-            eventsToPublisher.publishEvent(new UserRegistrationTransactionCompletedEvent());
-        } catch (Exception ex) {
-            logger.error("Error while publising the UserRegistrationTransactionCompletedEvent", ex);
-        }
+        publishUserRegistrationTransactionCompletedEvent();
 
         return user;
     }
@@ -112,5 +99,26 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
     @Override
     public void rollback() {
         clearDomainEvents();
+    }
+
+    private void publishUserRegistrationTransactionCompletedEvent() {
+        try {
+            eventsToPublisher.publishEvent(new UserRegistrationTransactionCompletedEvent());
+        } catch (Exception ex) {
+            logger.error("Error while publising the UserRegistrationTransactionCompletedEvent", ex);
+        }
+    }
+
+    private UserCreatedEvent createUserCreatedDomainEvent(User user) {
+        return UserCreatedEvent
+            .builder()
+                .payload(
+                    UserCreatedEventPayload
+                        .builder()
+                            .email(user.getEmail())
+                            .role(user.getRole())
+                        .build()
+                )
+            .build();
     }
 }
