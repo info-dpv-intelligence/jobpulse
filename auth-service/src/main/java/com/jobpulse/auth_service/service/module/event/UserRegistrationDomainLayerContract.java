@@ -6,6 +6,7 @@ import com.jobpulse.auth_service.model.event.UserCreatedEvent;
 import com.jobpulse.auth_service.model.event.UserCreatedPayload;
 import com.jobpulse.auth_service.service.module.event.broker.model.UserRegistrationTransactionCompletedEvent;
 
-public interface UserRegistrationDomainLayerContract extends BaseDomainEventLayerContract<UserCreatedEvent, UserCreatedPayload, UserRegistrationTransactionCompletedEvent> {
+public interface UserRegistrationDomainLayerContract extends BaseDomainEventLayerContract<UserCreatedEvent, UserCreatedPayload> {
     User touchUserForRegistration(RegisteringUserAction action);
+    void publishEvents(UserRegistrationTransactionCompletedEvent event);
 }
