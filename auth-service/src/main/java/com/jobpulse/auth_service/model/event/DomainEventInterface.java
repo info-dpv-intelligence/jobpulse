@@ -1,12 +1,9 @@
 package com.jobpulse.auth_service.model.event;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
-public interface DomainEventInterface<E, P> {
-    UUID eventId();
+public interface DomainEventInterface<P> {
     EventType eventType();
     ZonedDateTime createdAt();
-    UUID aggregateId();
     P payload();
 }

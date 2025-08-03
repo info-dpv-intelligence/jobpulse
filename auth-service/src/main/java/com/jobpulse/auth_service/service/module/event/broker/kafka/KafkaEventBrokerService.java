@@ -8,8 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.jobpulse.auth_service.model.event.DomainEventInterface;
-import com.jobpulse.auth_service.model.event.UserCreatedEvent;
-import com.jobpulse.auth_service.model.event.UserCreatedPayload;
+import com.jobpulse.auth_service.model.event.UserCreatedEventPayload;
 import com.jobpulse.auth_service.service.module.event.broker.EventBrokerContract;   
 import com.jobpulse.auth_service.service.module.event.broker.model.PublishEventsCommand;
 
@@ -29,11 +28,11 @@ public class KafkaEventBrokerService implements EventBrokerContract {
     }
 
     @Override
-    public void publishUserRegisterdEvents(PublishEventsCommand<UserCreatedEvent, UserCreatedPayload> command) {
-        List<DomainEventInterface<UserCreatedEvent, UserCreatedPayload>> events = command.getEvents();
+    public void publishUserRegisterdEvents(PublishEventsCommand<UserCreatedEventPayload> command) {
+        List<DomainEventInterface<UserCreatedEventPayload>> events = command.getEvents();
         
         if (events != null && !events.isEmpty()) {
-            for (DomainEventInterface<UserCreatedEvent, UserCreatedPayload> event : events) {
+            for (DomainEventInterface<UserCreatedEventPayload> event : events) {
                 kafkaTemplate.send(userEventsTopic, event.payload().email(), event.payload());
             }
         }

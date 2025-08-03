@@ -5,13 +5,13 @@ import com.jobpulse.auth_service.model.UserRole;
 import lombok.Builder;
 
 @Builder
-public record UserCreatedPayload(
+public record UserCreatedEventPayload(
     String email,
     UserRole role,
     EventType eventType
 ) {
-    public static UserCreatedPayloadBuilder builder() {
-        return UserCreatedPayload.builder().eventType(
+    public static UserCreatedEventPayloadBuilder builder() {
+        return new UserCreatedEventPayloadBuilder().eventType(
             EventType.USER_CREATED
         );
     }

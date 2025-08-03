@@ -6,10 +6,10 @@ import java.util.List;
 
 
 public interface BaseDomainEventLayerContract<E, P> {
-    void raiseEvent(DomainEventInterface<E, P> event);
+    void raiseEvent(DomainEventInterface<P> event);
     void clearEvents();
     boolean hasEvents();
-    List<DomainEventInterface<E, P>> domainEvents();
+    List<DomainEventInterface<P>> domainEvents();
     void clearDomainEvents();
     void rollback();
 }

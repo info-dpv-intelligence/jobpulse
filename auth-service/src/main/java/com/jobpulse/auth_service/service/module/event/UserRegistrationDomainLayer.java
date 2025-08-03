@@ -4,11 +4,13 @@ import com.jobpulse.auth_service.dto.request.RegisteringUserAction;
 import com.jobpulse.auth_service.model.User;
 import com.jobpulse.auth_service.model.event.DomainEventInterface;
 import com.jobpulse.auth_service.model.event.UserCreatedEvent;
-import com.jobpulse.auth_service.model.event.UserCreatedPayload;
+import com.jobpulse.auth_service.model.event.UserCreatedEventPayload;
 import com.jobpulse.auth_service.service.module.event.broker.EventBrokerContract;
 import com.jobpulse.auth_service.service.module.event.broker.model.PublishEventsCommand;
 import com.jobpulse.auth_service.service.module.event.broker.model.UserRegistrationTransactionCompletedEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
@@ -23,9 +25,10 @@ import java.util.List;
 @Service
 public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerContract {
 
-    private final List<DomainEventInterface<UserCreatedEvent, UserCreatedPayload>> events = new ArrayList<>();
+    private final List<DomainEventInterface<UserCreatedEventPayload>> events = new ArrayList<>();
     private final EventBrokerContract eventBroker;
     private final ApplicationEventPublisher eventsToPublisher;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     public UserRegistrationDomainLayer(
@@ -44,25 +47,28 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
             .role(action.getRole())
             .build();
 
-        DomainEventInterface<UserCreatedEvent, UserCreatedPayload> event = UserCreatedEvent
+        DomainEventInterface<UserCreatedEventPayload> event = UserCreatedEvent
             .builder()
                 .payload(
-                    UserCreatedPayload
+                    UserCreatedEventPayload
                         .builder()
-                        .email(user.getEmail())
-                        .role(user.getRole())
+                            .email(user.getEmail())
+                            .role(user.getRole())
                         .build()
                 )
             .build();
-    
         raiseEvent(event);
-        eventsToPublisher.publishEvent(new UserRegistrationTransactionCompletedEvent());
+        try {
+            eventsToPublisher.publishEvent(new UserRegistrationTransactionCompletedEvent());
+        } catch (Exception ex) {
+            logger.error("Error while publising the UserRegistrationTransactionCompletedEvent", ex);
+        }
 
         return user;
     }
 
     @Override
-    public void raiseEvent(DomainEventInterface<UserCreatedEvent, UserCreatedPayload> event) {
+    public void raiseEvent(DomainEventInterface<UserCreatedEventPayload> event) {
         this.events.add(event);
     }
 
@@ -77,7 +83,7 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
     }
 
     @Override
-    public List<DomainEventInterface<UserCreatedEvent, UserCreatedPayload>> domainEvents() {
+    public List<DomainEventInterface<UserCreatedEventPayload>> domainEvents() {
         return this.events;
     }
 
@@ -95,7 +101,7 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
         }
 
         eventBroker.publishUserRegisterdEvents(
-            PublishEventsCommand.<UserCreatedEvent, UserCreatedPayload>builder()
+            PublishEventsCommand.<UserCreatedEventPayload>builder()
                 .events(domainEvents())
                 .build()
         );

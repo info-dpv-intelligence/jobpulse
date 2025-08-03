@@ -13,6 +13,6 @@ import lombok.Getter;
 @Builder
 @Getter
 @AllArgsConstructor
-public class PublishEventsCommand<E, P> {
-    private final List<DomainEventInterface<E, P>> events;
+public class PublishEventsCommand<P> {
+    private final List<DomainEventInterface<P>> events;
 }
