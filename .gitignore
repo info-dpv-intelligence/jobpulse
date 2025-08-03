@@ -48,3 +48,6 @@ docker-compose.override.yml
 logs/
 **/logs/
 *.log
+
+**/application-prod.properties
+!**/application-prod.template.properties

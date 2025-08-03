@@ -9,5 +9,5 @@ public final class JobPostProperties {
     public final String CREATED_AT = JobPost_.createdAt.getName();
     public final String ID = JobPost_.id.getName();
     //TODO: move to a separate configuration
-    public final Integer DEFAULT_PAGE_SIZE = 10;
+    public final int DEFAULT_PAGE_SIZE = 10;
 }

@@ -15,7 +15,7 @@ import lombok.Getter;
 public class GetJobPostsCommand {
     private final ZonedDateTime cursorCreatedAt;
     private final UUID cursorId;
-    private final Integer pageSize;
+    private final int pageSize;
     private final String sortField;
     @Builder.Default
     private final Sort.Direction sortDirection = Sort.Direction.DESC;

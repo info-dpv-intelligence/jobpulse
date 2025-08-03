@@ -22,6 +22,9 @@ services:
       - OPENAPI_TITLE=JobPulse Auth Service API (Development)
       - OPENAPI_VERSION=1.0.0
       - OPENAPI_DESCRIPTION=Authentication service for development environment
+      - USER_EVENTS_TOPIC
+      - USER_EVENTS_PARTITION_COUNT
+      - USER_EVENTS_REPLICA_COUNT
     depends_on:
       - auth-db
       - kafka
@@ -30,11 +33,12 @@ services:
     restart: on-failure
 
   jobcreationlisting:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        SERVICE_NAME: jobcreationlisting
+    image: jobpulse-jobcreationlisting
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+      # args:
+      #   SERVICE_NAME: jobcreationlisting
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://job-db:5432/jobdb

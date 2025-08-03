@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import io.jsonwebtoken.security.Keys;
 
@@ -20,6 +21,10 @@ import java.util.List;
 @org.springframework.context.annotation.Configuration
 public class SecurityConfig {
 
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public JwtDecoder jwtDecoder(@Value("${jwt.secret}") String jwtSecret) {
@@ -47,23 +52,28 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/v1/auth/register",
+                    "/v1/auth/register/",
                     "/v1/auth/login",
+                    "/v1/auth/login/",
                     "/ping", 
                     "/ping/",
                     "/actuator/health",
                     "/actuator/prometheus",
                     "/actuator/metrics/**",
+                    "/v3/api-docs",
                     "/v3/api-docs/**",
-                    "/v3/api-docs.json",
+                    "/v3/api-docs.yaml",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/swagger-resources/**",
                     "/webjars/**",
-                    "/configuration/**"
+                    "/configuration/**",
+                    "/swagger-config"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
