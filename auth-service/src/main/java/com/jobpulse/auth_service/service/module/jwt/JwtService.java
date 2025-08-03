@@ -43,7 +43,7 @@ public class JwtService implements JwtServiceContract {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = this.jwtConfig.jwtSecret().getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = this.jwtConfig.secret().getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -59,7 +59,7 @@ public class JwtService implements JwtServiceContract {
             .claim("email", request.getEmail())
             .claim("role", request.getRole().name())
             .issuedAt(Date.from(now))
-            .expiration(Date.from(now.plusMillis(this.jwtConfig.jwtExpirationMs())))
+            .expiration(Date.from(now.plusMillis(this.jwtConfig.expirationMs())))
             .signWith(getSigningKey())
             .compact();
 
