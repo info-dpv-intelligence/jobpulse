@@ -33,6 +33,7 @@ public class SecurityConfig {
         return converter;
     }
 
+    //TODO: add configuration properties
     @Bean
     public JwtDecoder jwtDecoder(@Value("${jwt.secret}") String jwtSecret) {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
@@ -48,8 +49,18 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/v1/ping", 
-                    "/v1/ping/"
+                    "/actuator/health",
+                    "/actuator/prometheus",
+                    "/actuator/metrics/**",
+                    "/v3/api-docs",
+                    "/v3/api-docs/**",
+                    "/v3/api-docs.yaml",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**",
+                    "/configuration/**",
+                    "/swagger-config"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
