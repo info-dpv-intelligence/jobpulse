@@ -32,31 +32,37 @@ A microservices-based job posting and application management system built with J
 - [Job Application](docs/job-service/database-design/job_application.puml)
 
 **Service-Specific Architecture:**
-- [Auth Service Architecture](docs/auth-service/auth-service.puml) - Service structure and components
+Auth Service:
+   - [Auth Service Architecture](docs/auth-service/auth-service.puml) - Service structure and components
+   - [Auth Service User Registration Sequence](docs/auth-service/sequence.puml) - User registration sequence
+
 - Job Service:
    - [Job Creation and Listing](docs/job-service/job-creation-listing/design.puml) - Job post creation and listing
    - [Job Poster](docs/job-service/job-poster/design.puml) - Manage job posts and review applications
    - [Job Seeker](docs/job-service/job-seeker/design.puml) - Manage applications
 
 ## Features
-   - **auth-service**: (Functionality Implemented: ✅, Tests: https://github.com/info-dpv-intelligence/jobpulse/issues/19).
-     - User registration and login with JWT tokens
-     - Role-based access control (RBAC)
+   - **auth-service**: (Functionality Implemented: ✅, Tests: https://github.com/info-dpv-intelligence/jobpulse/issues/19). 
+   - Handles user registration and login
+   - Issues JWT tokens with embedded user roles
+   - Enables Role-Based Access Control (RBAC) via token roles
    - **job-service**: (In progress 🚧)
       - **job-creation-listing**: (Parent Link: https://github.com/info-dpv-intelligence/jobpulse/issues/10)
          - Retrieve available job postings. (Functionality Implemented: ✅, Testing: https://github.com/info-dpv-intelligence/jobpulse/issues/18)
-           - Cursor-based pagination
+            - Cursor-based pagination
             - Limit support
             - Sort field selection
             - Sort direction
-         - Create a new job post in the system. (Functionality Implemented: ✅, Access control and Tests: https://github.com/info-dpv-intelligence/jobpulse/issues/3#issue-3266558186)
+         - Create a new job post in the system. (Functionality Implemented: ✅, Access control and Tests: https://
+         github.com/info-dpv-intelligence/jobpulse/issues/3#issue-3266558186)
+            - Access restricted via Role-Based Access Control (RBAC) to users with roles: JOB_POSTER or ADMIN
       - **jobpulse-microservice-starter**: (Issue Link: https://github.com/info-dpv-intelligence/jobpulse/issues/20)
         - _A lightweight starter template with common configs, to quickly spin up new JobPulse microservices._
-      - **job-poster**:
+      - **job-poster**: (_TBI_)
          - List all job posts created by the current poster.
          — Modify the status or visibility of a job post.
          - Retrieve all applications submitted for a specific job post.
-      - **job-seeker**:
+      - **job-seeker**: (_TBI_)
          - List all applied job applicants.
          - Submit a job application.
          - Edit or update documents (resume, cover letter) attached to an application.
@@ -68,7 +74,8 @@ A microservices-based job posting and application management system built with J
 - Health checks (`/actuator/health`) 
 
 **API Documentation:**
-- OpenAPI/Swagger(In progress 🚧)
+- Auth service: http://localhost:8080/swagger-ui.html
+- Job creation and listing: http://localhost:8081/swagger-ui.html
 
 ## 🔧 Quick Start
 
@@ -79,38 +86,43 @@ A microservices-based job posting and application management system built with J
    ```
 
 2. **Configure credentials in `.env`:**
-   ```bash
-   # Required: Set your Grafana password
-   GRAFANA_PASSWORD=your_secure_password_here
-   
-   # Optional: Override default URLs if needed
-   # GRAFANA_URL=http://localhost:3000
-   ```
 
 3. **Start services:**
    ```bash
    # Start all services
    make ENV=dev full-up
    ```
-Apologies, the API specification configuration is under progress:
 
-In the meantime
+### API Documentation
 
-The auth-service is responsible for user registration/login and issuing JWT tokens
-You can access it: 
-   - Register: http://localhost:8080/v1/auth/register
-   - Login: http://localhost:8080/v1/auth/login
-      On successful login, you will receive {
-    "accessToken": "accessToken",
-    "refreshToken": "refreshToken"
-}
-The jobpostcreationlisting is avaiable for fetching and creating the job posts.
-You can access it:
-   Authorization: Bearer <accessToken>
-   GET: 
-   - http://localhost:8081/v1/jobs?sortDirection=ASC
-   POST:
-   - http://localhost:8081/v1/jobs
+Each microservice exposes interactive API documentation via **Swagger UI**. Once the services are running locally, you can explore available endpoints and see detailed request/response models in your browser.
+
+---
+
+### 🛡️ Auth Service  
+**URL:** `[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)`
+
+* Register with `POST /v1/auth/register`
+* Log in with `POST /v1/auth/login` to receive a **JWT access token**
+
+---
+
+### 📄 Job Service  
+**URL:** `[http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)`
+
+* `GET /v1/jobs` is **public** – anyone can view job listings without authentication.
+
+To create a job post, you need to:
+
+1.  Authenticate via the Auth Service to get a **JWT token**.
+2.  In **Swagger UI**, use the **"Authorize"** button to open the authentication pop-up.
+3.  The JWT token must be provided as a **Bearer token** in the `Authorization` header.
+    * In **Swagger UI**, enter `Bearer <your_token>` into the pop-up field.
+    * In **Postman**, ensure you provide the token as the value for the `Bearer Token` authentication type.
+    * When using the `cURL` command provided by Swagger UI after clicking "Execute," the necessary `Authorization` header will be included automatically.
+4.  Only users with roles `JOB_POSTER` can create or modify job posts.
+
+---
 
 ## 📊 Monitoring & Observability
 

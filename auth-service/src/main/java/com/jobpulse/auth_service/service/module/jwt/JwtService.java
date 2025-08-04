@@ -43,15 +43,17 @@ public class JwtService implements JwtServiceContract {
     }
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = this.jwtConfig.jwtSecret().getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = this.jwtConfig.secret().getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
     @Override
     public TokenResponse generateToken(GenerateTokenRequest request) {
-        revokeAllRefreshTokens(RefreshTokenRequest.builder()
-            .userId(request.getUserId())
-            .build());
+        revokeAllRefreshTokens(
+            RefreshTokenRequest.builder()
+                .userId(request.getUserId())
+                .build()
+        );
 
         Instant now = Instant.now();
         String accessToken = Jwts.builder()
@@ -59,7 +61,7 @@ public class JwtService implements JwtServiceContract {
             .claim("email", request.getEmail())
             .claim("role", request.getRole().name())
             .issuedAt(Date.from(now))
-            .expiration(Date.from(now.plusMillis(this.jwtConfig.jwtExpirationMs())))
+            .expiration(Date.from(now.plusMillis(this.jwtConfig.expirationMs())))
             .signWith(getSigningKey())
             .compact();
 
@@ -75,7 +77,7 @@ public class JwtService implements JwtServiceContract {
 
     @Override
     public void revokeAllRefreshTokens(RefreshTokenRequest request) {
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(request.userId())
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         List<RefreshToken> tokens = refreshTokenRepository.findAllByUser(user);
@@ -88,7 +90,7 @@ public class JwtService implements JwtServiceContract {
     }
 
     private RefreshToken generateRefreshToken(RefreshTokenRequest request) {
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(request.userId())
         //TODO: user error placement move it to userservice
             .orElseThrow(() -> new RuntimeException("User not found"));
             

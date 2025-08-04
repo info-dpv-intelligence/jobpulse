@@ -1,4 +1,4 @@
-package com.jobpulse.auth_service.config;
+package com.jobpulse.jobcreationlisting.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -22,16 +22,16 @@ public class OpenApiConfig {
         @Value("${app.openapi.prod-url:http://16.171.9.26:8089}")
         private String prodUrl;
 
-        @Value("${app.openapi.dev-url:http://localhost:8080}")
+        @Value("${app.openapi.dev-url:http://localhost:8081}")
         private String devUrl;
 
-        @Value("${app.openapi.title:JobPulse Auth Service API}")
+        @Value("${app.openapi.title:JobPulse Job Creation And Listing Service API}")
         private String title;
 
         @Value("${app.openapi.version:1.0.0}")
         private String version;
 
-        @Value("${app.openapi.description:Authentication and authorization service for JobPulse platform}")
+        @Value("${app.openapi.description:Job Creation And Listing service for JobPulse platform}")
         private String description;
 
         @Bean

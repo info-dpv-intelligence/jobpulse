@@ -6,6 +6,7 @@ import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostRequest;
 import com.jobpulse.jobcreationlisting.dto.request.jobpost.GetJobPostsRequest;
 import com.jobpulse.jobcreationlisting.dto.request.mapper.CreateJobPostRequestMapper;
 import com.jobpulse.jobcreationlisting.dto.request.UserContext;
+import com.jobpulse.jobcreationlisting.dto.response.ControllerResponse;
 import com.jobpulse.jobcreationlisting.dto.response.JobListingsResponse;
 import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
 
@@ -18,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/v1")
@@ -41,22 +44,21 @@ public class JobPostCreationListingController {
     @Operation(
             summary = "Get all job postings"
     )
-    public ResponseEntity<JobListingsResponse> getJobPosts(
+    public ControllerResponse<JobListingsResponse> getJobPosts(
         @Valid @ModelAttribute GetJobPostsRequest getJobPostsRequest
     ) {
-        return ResponseEntity.ok(
+        return ControllerResponse.success(
             jobPostCreationListingService.getJobPosts(
                 getJobPostsRequest
             ).getData()
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','JOB_POSTER')")
     @PostMapping("/jobs")
-    @Operation(
-            summary = "Create a new job posting"
-    )
+    @Operation(summary = "Create a new job posting")
     @SecurityRequirement(name = "bearer-jwt")
-    public ResponseEntity<JobPostCreatedAggregateResponse> createJob(
+    public ControllerResponse<JobPostCreatedAggregateResponse> createJob(
             @RequestBody @Valid CreateJobPostBodyRequest createJobPostBodyRequest,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -72,7 +74,9 @@ public class JobPostCreationListingController {
                 .getData()
         );
 
-        return ResponseEntity.ok(jobPostCreatedAggregateResponse);
+        return ControllerResponse.success(
+            jobPostCreatedAggregateResponse
+        );
 
     }
 }

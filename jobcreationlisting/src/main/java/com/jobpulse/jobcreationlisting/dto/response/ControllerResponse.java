@@ -1,4 +1,4 @@
-package com.jobpulse.auth_service.dto.response;
+package com.jobpulse.jobcreationlisting.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -17,6 +17,7 @@ public class ControllerResponse<T> {
     @Schema(description = "Response message")
     String message;
 
+    @Schema(description = "Response payload")
     T data;
 
     public static <T> ControllerResponse<T> success(T data) {

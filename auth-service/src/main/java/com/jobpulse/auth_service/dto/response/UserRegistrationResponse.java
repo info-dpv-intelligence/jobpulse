@@ -8,11 +8,9 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Schema(description = "Response for user registration operations")
-@Getter
-@Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserRegistrationResponse {    
+@Builder
+public record UserRegistrationResponse(
     @Schema(description = "Unique identifier of the newly created user", example = "123e4567-e89b-12d3-a456-426614174000")
-    private final String userId;
-}
+    String userId
+) {}
