@@ -1,23 +1,35 @@
 @startuml sequence
+
 group User Registration Domain Events Lifecycle
     actor user as "User"
-    
+
     user -> AuthController: register(RegisterRequest)
     AuthController -> UserServiceContract: registerUser(request)
-    UserServiceContract -> UserDomainEventLayerContract: registeringUser(action)
+    UserServiceContract -> UserDomainEventLayerContract: touchUserForRegistration(action)
+    UserDomainEventLayerContract -> UserDomainEventLayerContract: Get from user model
     UserDomainEventLayerContract -> UserDomainEventLayerContract: raiseEvent(EventType.USER_CREATED)
-    UserDomainEventLayerContract -> UserServiceContract: return User domain object
+    UserDomainEventLayerContract -> UserServiceContract: return user
+    UserDomainEventLayerContract -> UserDomainEventLayerContract: publish UserRegistrationTransactionCompletedEvent
     UserServiceContract -> UserRepository: save(user)
-    UserServiceContract -> UserDomainEventLayerContract: confirm()
-    UserDomainEventLayerContract -> UserDomainEventLayerContract: publishEvents()
+
+    Infrastructure -> UserDomainEventLayerContract: AFTER_COMMIT event(UserRegistrationTransactionCompletedEvent)
+
+    par Asynchronous Event Publication
+        Infrastructure -> UserDomainEventLayerContract: @Async @TransactionalEventListener(AFTER_COMMIT)
+        UserDomainEventLayerContract -> UserDomainEventLayerContract: publishEvents()
+        UserDomainEventLayerContract -> EventBroker: publishUserRegisteredEvents(user)
+    end
+
     UserDomainEventLayerContract --> user: Registration Success
-    
+
     alt Registration Error
         UserServiceContract -> UserDomainEventLayerContract: rollback()
         UserDomainEventLayerContract -> UserDomainEventLayerContract: clearDomainEvents()
         UserDomainEventLayerContract --> user: Registration Failed
     end
 end
+
+@enduml
 
 group JWT Token Generation Sequence
     actor service as "Auth Service"
