@@ -56,8 +56,7 @@ public class OpenApiConfig {
                                         .name("MIT License")
                                         .url("https://opensource.org/licenses/MIT")))
                         .servers(createServerList())
-                        .components(components)
-                        .addSecurityItem(new SecurityRequirement().addList("bearer-jwt"));
+                        .components(components);
         }
 
         private List<Server> createServerList() {
