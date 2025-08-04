@@ -13,6 +13,10 @@ A microservices-based job posting and application management system built with J
 
 ## Architecture
 
+Note: I moved domain events out of the entity into a separate domain layer [see here](https://github.com/info-dpv-intelligence/jobpulse/blob/main/auth-service/src/main/java/com/jobpulse/auth_service/service/module/event/UserRegistrationDomainLayer.java#L85) and introduced an event broker contract to keep dependencies tidy and isolated.
+The entity stays a simple POJO—just a DB map.
+Innocent until proven guilty, but I’m happy to chat about why this makes sense. 😉
+
 **Microservices:**
 - `auth-service`:
    _Handles user registration, login, and JWT token issuance with embedded roles. Each microservice enforces role-based access control by validating roles from the token._
