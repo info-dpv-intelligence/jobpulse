@@ -97,6 +97,7 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
     }
 
     @Override
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void rollback() {
         clearDomainEvents();
     }
