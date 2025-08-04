@@ -54,7 +54,7 @@ public class JobPostCreationListingController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasAnyRole('ADMIN','JOB_POSTER')")
     @PostMapping("/jobs")
     @Operation(summary = "Create a new job posting")
     @SecurityRequirement(name = "bearer-jwt")
