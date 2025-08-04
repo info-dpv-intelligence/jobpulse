@@ -42,9 +42,9 @@ public class UserRegistrationDomainLayer implements UserRegistrationDomainLayerC
     @Override
     public User touchUserForRegistration(RegisteringUserAction action) {
         User user = User.builder()
-                        .email(action.getEmail())
-                        .password(action.getEncodedPassword())
-                        .role(action.getRole())
+                        .email(action.email())
+                        .password(action.encodedPassword())
+                        .role(action.role())
                     .build();
 
         DomainEventInterface<UserCreatedEventPayload> event = createUserCreatedDomainEvent(user);

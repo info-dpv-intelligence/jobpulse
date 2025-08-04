@@ -1,6 +1,6 @@
 package com.jobpulse.auth_service.dto.request;
 
-import com.jobpulse.auth_service.model.UserRole;
+import com.jobpulse.auth_service.model.PublicUserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +24,6 @@ public class RegisterRequest {
     @NotBlank
     private String password;
 
-    @Schema(description = "User's role in the system", example = "JOB_APPLICANT", required = true)
     @NotNull
-    private UserRole role;
+    private PublicUserRole role;
 }

@@ -86,8 +86,6 @@ public class SecurityConfig {
                     "/v1/auth/register/",
                     "/v1/auth/login",
                     "/v1/auth/login/",
-                    "/ping", 
-                    "/ping/",
                     "/actuator/health",
                     "/actuator/prometheus",
                     "/actuator/metrics/**",

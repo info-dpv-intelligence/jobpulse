@@ -17,7 +17,6 @@ public class ControllerResponse<T> {
     @Schema(description = "Response message")
     String message;
 
-    @Schema(description = "Response payload")
     T data;
 
     public static <T> ControllerResponse<T> success(T data) {

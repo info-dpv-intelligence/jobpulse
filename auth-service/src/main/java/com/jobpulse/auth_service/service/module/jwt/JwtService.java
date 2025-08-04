@@ -49,9 +49,11 @@ public class JwtService implements JwtServiceContract {
 
     @Override
     public TokenResponse generateToken(GenerateTokenRequest request) {
-        revokeAllRefreshTokens(RefreshTokenRequest.builder()
-            .userId(request.getUserId())
-            .build());
+        revokeAllRefreshTokens(
+            RefreshTokenRequest.builder()
+                .userId(request.getUserId())
+                .build()
+        );
 
         Instant now = Instant.now();
         String accessToken = Jwts.builder()
@@ -75,7 +77,7 @@ public class JwtService implements JwtServiceContract {
 
     @Override
     public void revokeAllRefreshTokens(RefreshTokenRequest request) {
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(request.userId())
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         List<RefreshToken> tokens = refreshTokenRepository.findAllByUser(user);
@@ -88,7 +90,7 @@ public class JwtService implements JwtServiceContract {
     }
 
     private RefreshToken generateRefreshToken(RefreshTokenRequest request) {
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findById(request.userId())
         //TODO: user error placement move it to userservice
             .orElseThrow(() -> new RuntimeException("User not found"));
             

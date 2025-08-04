@@ -41,19 +41,11 @@ public class AuthController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "User registered successfully",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ControllerResponse.class)
-            )
+            description = "User registered successfully"
         ),
         @ApiResponse(
             responseCode = "400",
-            description = "Invalid input or user already exists (RegistrationException)",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ControllerResponse.class)
-            )
+            description = "Invalid input or user already exists"
         )
     })
     public ControllerResponse<UserRegistrationResponse> register(
@@ -73,19 +65,11 @@ public class AuthController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Login successful",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ControllerResponse.class)
-            )
+            description = "Login successful"
         ),
                 @ApiResponse(
             responseCode = "401",
-            description = "Invalid credentials (InvalidCredentialsException)",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = ControllerResponse.class)
-            )
+            description = "Invalid credentials (InvalidCredentialsException)"
         )
     })
 

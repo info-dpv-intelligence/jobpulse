@@ -10,6 +10,7 @@ import com.jobpulse.auth_service.dto.response.UserRegistrationResponse;
 import com.jobpulse.auth_service.exception.InvalidCredentialsException;
 import com.jobpulse.auth_service.exception.UserAlreadyExistsException;
 import com.jobpulse.auth_service.model.User;
+import com.jobpulse.auth_service.model.UserRole;
 import com.jobpulse.auth_service.repository.UserRepository;
 import com.jobpulse.auth_service.service.module.event.UserRegistrationDomainLayerContract;
 import com.jobpulse.auth_service.service.module.jwt.JwtServiceContract;
@@ -50,7 +51,7 @@ public class UserService implements UserServiceContract {
             RegisteringUserAction action = RegisteringUserAction.builder()
                 .email(request.getEmail())
                 .encodedPassword(passwordService.encode(request.getPassword()))
-                .role(request.getRole())
+                .role(UserRole.valueOf(request.getRole().name()))
                 .build();
 
             User user = userRegistrationDomainLayer.touchUserForRegistration(action);
