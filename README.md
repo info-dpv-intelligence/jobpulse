@@ -41,11 +41,15 @@ Auth Service:
    - [Job Poster](docs/job-service/job-poster/design.puml) - Manage job posts and review applications
    - [Job Seeker](docs/job-service/job-seeker/design.puml) - Manage applications
 
+**API Documentation:**
+- Auth service: http://localhost:8080/swagger-ui.html
+- Job creation and listing: http://localhost:8081/swagger-ui.html
+
 ## Features
    - **auth-service**: (Functionality Implemented: ✅, Tests: https://github.com/info-dpv-intelligence/jobpulse/issues/19). 
-   - Handles user registration and login
-   - Issues JWT tokens with embedded user roles
-   - Enables Role-Based Access Control (RBAC) via token roles
+      - Handles user registration and login
+      - Issues JWT tokens with embedded user roles
+      - Enables Role-Based Access Control (RBAC) via token roles
    - **job-service**: (In progress 🚧)
       - **job-creation-listing**: (Parent Link: https://github.com/info-dpv-intelligence/jobpulse/issues/10)
          - Retrieve available job postings. (Functionality Implemented: ✅, Testing: https://github.com/info-dpv-intelligence/jobpulse/issues/18)
@@ -72,10 +76,6 @@ Auth Service:
 - Grafana dashboards for visualization
 - Jaeger distributed tracing (_configuration review pending ⏳_)
 - Health checks (`/actuator/health`) 
-
-**API Documentation:**
-- Auth service: http://localhost:8080/swagger-ui.html
-- Job creation and listing: http://localhost:8081/swagger-ui.html
 
 ## 🔧 Quick Start
 
