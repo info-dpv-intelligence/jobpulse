@@ -20,6 +20,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/v1")
 @Tag(name = "JobPostCreationListingController", description = "Job post creation and listing")
@@ -52,6 +54,7 @@ public class JobPostCreationListingController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PostMapping("/jobs")
     @Operation(summary = "Create a new job posting")
     @SecurityRequirement(name = "bearer-jwt")

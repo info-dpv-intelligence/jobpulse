@@ -10,9 +10,20 @@ import com.jobpulse.jobcreationlisting.dto.response.ControllerResponse;
 
 import com.jobpulse.jobcreationlisting.dto.response.ErrorResponse;
 import com.jobpulse.jobcreationlisting.exception.CompanyNotFoundException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+
 
 @RestControllerAdvice
 public class RestControllerExceptionHandler {
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ControllerResponse<?> handleAuthorizationDeniedException(Exception ex) {
+        return ControllerResponse.builder()
+            .status(false)
+            .code(HttpStatus.FORBIDDEN.value())
+            .message(ex.getMessage())
+            .build();
+    }
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ControllerResponse<?> handleIllegalArgumentException(Exception ex) {
