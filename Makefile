@@ -133,12 +133,21 @@ full-down:
 	@echo "$(GREEN)✅ Complete $(ENV) environment stopped$(NC)"
 
 # Utility commands
-jobcreationlisting-build-cp:
-	@./gradlew jobcreationlisting:clean
-	@./gradlew jobcreationlisting:build --refresh-dependencies -x test
-	@docker cp jobcreationlisting/build/libs/jobcreationlisting-0.0.1-SNAPSHOT.jar jobcreationlisting:/app/app.jar
-	@docker restart jobcreationlisting
-	
+
+buildjarcopy:
+	@if [ -z "$(SERVICE)" ]; then \
+        echo "$(RED)❌ Error: SERVICE parameter required$(NC)"; \
+        echo "$(YELLOW)Usage: make buildjarcopy SERVICE=service-name$(NC)"; \
+        echo "$(YELLOW)Example: make buildjarcopy SERVICE=auth-service$(NC)"; \
+        exit 1; \
+    fi
+	@echo "$(BLUE)🔨 Building and copying $(SERVICE)...$(NC)"
+	@./gradlew $(SERVICE):clean
+	@./gradlew $(SERVICE):build --refresh-dependencies -x test
+	@docker cp $(SERVICE)/build/libs/$(SERVICE)-0.0.1-SNAPSHOT.jar $(SERVICE):/app/app.jar
+	@docker restart $(SERVICE)
+	@echo "$(GREEN)✅ $(SERVICE) deployed successfully$(NC)"
+
 build:
 	@echo "$(BLUE)🔨 Building $(ENV) images...$(NC)"
 	@echo "$(YELLOW)🧹 Cleaning old project images...$(NC)"
@@ -178,8 +187,6 @@ clean-build:
 	@rm -rf build/ .gradle/
 	@echo "$(YELLOW)🗂️  Removing auth-service build directories...$(NC)"
 	@rm -rf auth-service/build/ auth-service/.gradle/
-	@echo "$(YELLOW)🗂️  Removing job-service build directories...$(NC)"
-	@rm -rf job-service/build/ job-service/.gradle/
 	@echo "$(YELLOW)🗂️  Removing common-events build directories...$(NC)"
 	@rm -rf common-events/build/ common-events/.gradle/
 	@echo "$(YELLOW)🧽 Running gradle clean on all projects...$(NC)"
@@ -215,7 +222,6 @@ urls:
 	@echo "  📊 Grafana:     http://$(BASE_URL):$(GRAFANA_PORT) (admin/***)"
 	@echo "      - Overview Dashboard: /d/jobpulse-overview"
 	@echo "      - Auth Service: /d/auth-service-dashboard"  
-	@echo "      - Job Service: /d/job-service-dashboard"
 	@echo "      - Infrastructure: /d/infrastructure-dashboard"
 	@echo "  📈 Prometheus:  http://$(BASE_URL):$(PROMETHEUS_PORT)"
 	@echo "  🔍 Jaeger:      http://$(BASE_URL):$(JAEGER_PORT)"
