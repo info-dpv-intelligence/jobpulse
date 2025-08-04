@@ -33,12 +33,11 @@ services:
     restart: on-failure
 
   jobcreationlisting:
-    image: jobpulse-jobcreationlisting
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
-      # args:
-      #   SERVICE_NAME: jobcreationlisting
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: jobcreationlisting
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DATASOURCE_URL=jdbc:postgresql://job-db:5432/jobdb
