@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import com.jobpulse.jobcreationlisting.dto.request.company.NewCompanyDetailsRequest;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -17,7 +21,11 @@ public class CreateJobPostBodyRequest {
     @NotNull(message = "Job post description is required")
     private JobPostDescriptionRequest jobPostDescription;
 
-    private CompanyDetailsRequest companyDetails;
+    @Schema(
+        description = "Company details. Either provide an existing company ID or the details for a new company.",
+        oneOf = {NewCompanyDetailsRequest.class, ExistingCompanyDetailsRequest.class}
+    )
+    private Object companyDetails;
 
     private JobPostPreRequisitesRequest jobPostPreRequisites;
 }

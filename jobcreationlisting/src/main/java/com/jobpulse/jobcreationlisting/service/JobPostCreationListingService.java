@@ -17,6 +17,7 @@ import com.jobpulse.jobcreationlisting.dto.response.view.JobListingView;
 import com.jobpulse.jobcreationlisting.dto.response.view.JobPostViewMapper;
 import com.jobpulse.jobcreationlisting.dto.util.cursor.CursorEncoderDecoderContract;
 import com.jobpulse.jobcreationlisting.dto.util.cursor.CursorV1;
+import com.jobpulse.jobcreationlisting.exception.CompanyNotFoundException;
 import com.jobpulse.jobcreationlisting.model.*;
 import com.jobpulse.jobcreationlisting.model.properties.JobPostProperties;
 import com.jobpulse.jobcreationlisting.repository.*;
@@ -54,37 +55,59 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
         this.jobPostViewMapper = jobPostViewMapper;
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public ServiceResult<JobListingsResponse> getJobPosts(GetJobPostsRequest request) {
-        
-        try {
             GetJobPostsCommand getJobPostcommand = buildGetJobPostsCommand(request);
-            
             Slice<JobPost> jobPosts = jobPostCreationListingRepositoryImp.getJobPosts(getJobPostcommand).getData();
-
             Slice<JobListingView> jobPostListingsViewPage = jobPostViewMapper.toJobListingViewPage(jobPosts);
 
-            String nextCursor = null;
             List<JobPost> content = jobPosts.getContent();
-            if (!content.isEmpty() && jobPosts.hasNext()) {
-                JobPost lastItem = content.get(content.size() - 1);
-                nextCursor = cursorEncoderDecoder.encode(
-                    CursorV1.builder()
-                        .id(lastItem.getId())
-                        .createdAt(lastItem.getCreatedAt())
-                        .build()
-                );
-            }
-            JobListingsResponse jobListingsResponse = JobListingsResponse
-                .builder()
-                .jobPostListings(jobPostListingsViewPage.getContent())
-                .hasNext(jobPostListingsViewPage.hasNext())
-                .cursor(nextCursor)
-                .build();
+            String nextCursor = computeNextCursor(jobPosts, content);
 
-            return ServiceResult.success(jobListingsResponse);
-        } catch (Exception e) {
-            return ServiceResult.failure("Failed to retrieve job posts: " + e.getMessage());
+
+            return ServiceResult.success(
+                JobListingsResponse
+                .builder()
+                    .jobPostListings(jobPostListingsViewPage.getContent())
+                    .hasNext(jobPostListingsViewPage.hasNext())
+                    .cursor(nextCursor)
+                .build()
+            );
+    }
+
+    @Override
+    @Transactional
+    public ServiceResult<JobPostCreatedAggregateResponse> createJobPost(CreateJobPostRequest request) {
+        UUID companyDetailsId = findOrCreateCompanyDetails(request.getCompanyDetails());
+        UUID jobPostContentId = createJobPostContent(request, companyDetailsId);;
+        OperationResult<CreateJobPostResponse> createJobPostResponse = createJobPost(request, jobPostContentId);
+
+        return ServiceResult.success(
+            buildCreatedJobAggregateResponse(companyDetailsId, jobPostContentId, createJobPostResponse)
+        );
+    }
+
+    private String computeNextCursor(Slice<JobPost> jobPosts, List<JobPost> content) {
+        if (content.isEmpty() || !jobPosts.hasNext()) {
+            return null;
         }
+        JobPost lastItem = content.get(content.size() - 1);
+        return cursorEncoderDecoder.encode(
+            CursorV1.builder()
+                .id(lastItem.getId())
+                .createdAt(lastItem.getCreatedAt())
+                .build()
+        );
+    }
+
+    private JobPostCreatedAggregateResponse buildCreatedJobAggregateResponse(UUID companyDetailsId, UUID jobPostContentId,
+            OperationResult<CreateJobPostResponse> createJobPostResponse) {
+        return JobPostCreatedAggregateResponse.builder()
+        .jobPostId(createJobPostResponse.getData().getJobPostId())
+        .jobPostContentId(jobPostContentId)
+        .companyDetailsId(companyDetailsId)
+        .build();
     }
 
     private GetJobPostsCommand buildGetJobPostsCommand(GetJobPostsRequest request) {
@@ -117,38 +140,26 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
         return getJobPostcommandBuilder.build();
     }
 
-    @Override
-    @Transactional
-    public ServiceResult<JobPostCreatedAggregateResponse> createJobPost(CreateJobPostRequest request) {
-        try {
-            UUID companyDetailsId = findOrCreateCompanyDetails(request.getCompanyDetails());
-
-            CreateJobPostContentV1Command contentCommand = CreateJobPostContentV1Command.builder()
-                .description(request.getJobPostDescription().getDescription())
-                .companyDetailsId(companyDetailsId)
-                .revisionStatus(RevisionStatus.DRAFT)
-                .build();
-            UUID jobPostContentId = jobPostCreationListingRepositoryImp.createJobPostContent(contentCommand).getData().getJobPostContentId();
-
-            CreateJobPostCommand createJobPostCommand = CreateJobPostCommand.builder()
-                .title(request.getTitle())
-                .jobPosterId(request.getJobPosterId())
-                .jobPostContentId(jobPostContentId)
-                .status(JobPostStatus.DRAFT)
-                .build();
-            OperationResult<CreateJobPostResponse> createJobPostResponse = jobPostCreationListingRepositoryImp.createJobPost(createJobPostCommand);
-
-            return ServiceResult.success(
-                JobPostCreatedAggregateResponse.builder()
-                .jobPostId(createJobPostResponse.getData().getJobPostId())
-                .jobPostContentId(jobPostContentId)
-                .companyDetailsId(companyDetailsId)
+    private OperationResult<CreateJobPostResponse> createJobPost(CreateJobPostRequest request, UUID jobPostContentId) {
+        return jobPostCreationListingRepositoryImp.createJobPost(
+            CreateJobPostCommand
+                .builder()
+                    .title(request.getTitle())
+                    .jobPosterId(request.getJobPosterId())
+                    .jobPostContentId(jobPostContentId)
+                    .status(JobPostStatus.DRAFT)
                 .build()
             );
-        } catch (Exception e) {
-            // logger
-            return ServiceResult.failure("Failed to create job post: " + e.getMessage());
-        }
+    }
+
+    private UUID createJobPostContent(CreateJobPostRequest request, UUID companyDetailsId) {
+        return jobPostCreationListingRepositoryImp.createJobPostContent(
+            CreateJobPostContentV1Command.builder()
+            .description(request.getJobPostDescription().getDescription())
+            .companyDetailsId(companyDetailsId)
+            .revisionStatus(RevisionStatus.DRAFT)
+            .build()
+        ).getData().getJobPostContentId();
     }
 
     private UUID findOrCreateCompanyDetails(CompanyDetailsRequest companyDetailsRequest) {
@@ -160,7 +171,7 @@ public class JobPostCreationListingService implements JobPostCreationListingCont
             UUID id = companyDetailsRequest.getCompanyDetailsId();
             return jobPostCreationListingRepositoryImp.findCompanyDetailsById(id)
                     .map(CompanyDetails::getCompanyDetailsId)
-                    .orElseThrow(() -> new EntityNotFoundException("Company details not found with id: " + id));
+                    .orElseThrow(() -> new CompanyNotFoundException());
         }
 
         CreateJobPostCompanyDetailsCommand command = CreateJobPostCompanyDetailsCommand.builder()

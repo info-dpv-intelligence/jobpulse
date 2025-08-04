@@ -6,6 +6,7 @@ import com.jobpulse.jobcreationlisting.dto.request.jobpost.CreateJobPostRequest;
 import com.jobpulse.jobcreationlisting.dto.request.jobpost.GetJobPostsRequest;
 import com.jobpulse.jobcreationlisting.dto.request.mapper.CreateJobPostRequestMapper;
 import com.jobpulse.jobcreationlisting.dto.request.UserContext;
+import com.jobpulse.jobcreationlisting.dto.response.ControllerResponse;
 import com.jobpulse.jobcreationlisting.dto.response.JobListingsResponse;
 import com.jobpulse.jobcreationlisting.dto.response.JobPostCreatedAggregateResponse;
 
@@ -41,10 +42,10 @@ public class JobPostCreationListingController {
     @Operation(
             summary = "Get all job postings"
     )
-    public ResponseEntity<JobListingsResponse> getJobPosts(
+    public ControllerResponse<JobListingsResponse> getJobPosts(
         @Valid @ModelAttribute GetJobPostsRequest getJobPostsRequest
     ) {
-        return ResponseEntity.ok(
+        return ControllerResponse.success(
             jobPostCreationListingService.getJobPosts(
                 getJobPostsRequest
             ).getData()
@@ -52,11 +53,9 @@ public class JobPostCreationListingController {
     }
 
     @PostMapping("/jobs")
-    @Operation(
-            summary = "Create a new job posting"
-    )
+    @Operation(summary = "Create a new job posting")
     @SecurityRequirement(name = "bearer-jwt")
-    public ResponseEntity<JobPostCreatedAggregateResponse> createJob(
+    public ControllerResponse<JobPostCreatedAggregateResponse> createJob(
             @RequestBody @Valid CreateJobPostBodyRequest createJobPostBodyRequest,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -72,7 +71,9 @@ public class JobPostCreationListingController {
                 .getData()
         );
 
-        return ResponseEntity.ok(jobPostCreatedAggregateResponse);
+        return ControllerResponse.success(
+            jobPostCreatedAggregateResponse
+        );
 
     }
 }
